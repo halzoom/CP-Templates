@@ -1,0 +1,112 @@
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{Multiplicative Property}
+        \begin{itemize}
+            \item If $\gcd(m, n) = 1$, then $\phi(m \cdot n) = \phi(m) \cdot \phi(n)$
+        \end{itemize}
+    
+    \item \textbf{Closed Form Formula}
+        \[\phi(n) = n\prod_{p \mid n}\left(1 - \frac{1}{p}\right)\]
+    
+    \item \textbf{Prime Power Case}
+        \begin{itemize}
+            \item For prime $p$ and $k \geq 1$:
+            \[\phi(p^k) = p^{k-1}(p-1) = p^k\left(1 - \frac{1}{p}\right)\]
+        \end{itemize}
+    
+    \item \textbf{Jordan Totient Generalization}
+        \[J_k(n) = n^k\prod_{p \mid n}\left(1 - \frac{1}{p^k}\right)\]
+        \begin{itemize}
+            \item $J_1(n) = \phi(n)$ counts $(k+1)$-tuples coprime with $n$
+        \end{itemize}
+    
+    \item \textbf{Sum of Jordan Totients}
+        \[\sum_{d \mid n} J_k(d) = n^k\]
+    
+    \item \textbf{Divisor Sum}
+        \[\sum_{d \mid n} \phi(d) = n\]
+    
+    \item \textbf{Möbius Inversion Formulas}
+        \[\phi(n) = \sum_{d \mid n} \mu(d)\frac{n}{d} = n\sum_{d \mid n} \frac{\mu(d)}{d}\]
+        \[\phi(n) = \sum_{d \mid n} d \cdot \mu\left(\frac{n}{d}\right)\]
+    
+    \item \textbf{Divisibility Property}
+        \[a \mid b \Rightarrow \phi(a) \mid \phi(b)\]
+    
+    \item \textbf{Exponent Divisibility}
+        \[n \mid \phi(a^n - 1) \quad \text{for } a, n > 1\]
+    
+    \item \textbf{General Product Formula}
+        \[\phi(mn) = \phi(m)\phi(n)\frac{d}{\phi(d)} \quad \text{where } d = \gcd(m,n)\]
+    
+    \item \textbf{Special Cases}
+        \begin{itemize}
+            \item For even numbers:
+            \[\phi(2m) = \begin{cases}
+                2\phi(m) & \text{if } m \text{ is even} \\
+                \phi(m) & \text{if } m \text{ is odd}
+            \end{cases}\]
+            \item Power formula:
+            \[\phi(n^m) = n^{m-1}\phi(n)\]
+        \end{itemize}
+    
+    \item \textbf{LCM-GCD Relationship}
+        \[\phi(\operatorname{lcm}(m,n)) \cdot \phi(\gcd(m,n)) = \phi(m) \cdot \phi(n)\]
+    
+    \item \textbf{Parity Property}
+        \begin{itemize}
+            \item $\phi(n)$ is even for $n \geq 3$
+            \item If $n$ has $r$ distinct odd prime factors, then $2^r \mid \phi(n)$
+        \end{itemize}
+    
+    \item \textbf{Reciprocal Sum}
+        \[\sum_{d \mid n} \frac{\mu^2(d)}{\phi(d)} = \frac{n}{\phi(n)}\]
+    
+    \item \textbf{Sum of Coprimes}
+        \[\sum_{\substack{1 \leq k \leq n \\ \gcd(k,n)=1}} k = \frac{1}{2}n\phi(n) \quad \text{for } n > 1\]
+    
+    \item \textbf{Radical Property}
+        \[\frac{\phi(n)}{n} = \frac{\phi(\operatorname{rad}(n))}{\operatorname{rad}(n)}\]
+        \begin{itemize}
+            \item where $\operatorname{rad}(n) = \prod_{p \mid n} p$
+        \end{itemize}
+    
+    \item \textbf{Bounds}
+        \begin{itemize}
+            \item Lower bound: $\phi(m) \geq \log_2 m$
+            \item Iterated totient bound: $\phi(\phi(m)) \leq \frac{m}{2}$
+        \end{itemize}
+    
+    \item \textbf{Exponent Reduction}
+        \begin{itemize}
+            \item For $x \geq \log_2 m$:
+            \[n^x \mod m = n^{\phi(m) + x \mod \phi(m)} \mod m\]
+        \end{itemize}
+    
+    \item \textbf{GCD Sum}
+        \[\sum_{\substack{1 \leq k \leq n \\ \gcd(k,n)=1}} \gcd(k-1, n) = \phi(n)d(n)\]
+        \begin{itemize}
+            \item Also holds for $\gcd(a \cdot k - 1, n)$ when $\gcd(a,n) = 1$
+        \end{itemize}
+    
+    \item \textbf{Non-uniqueness}
+        \begin{itemize}
+            \item For every $n$ there exists $m \neq n$ with $\phi(m) = \phi(n)$
+        \end{itemize}
+    
+    \item \textbf{Weighted Sum}
+        \[\sum_{i=1}^n \phi(i)\left\lfloor\frac{n}{i}\right\rfloor = \frac{n(n+1)}{2}\]
+    
+    \item \textbf{Odd-indexed Sum}
+        \[\sum_{\substack{i=1 \\ i \text{ odd}}}^n \phi(i)\left\lfloor\frac{n}{i}\right\rfloor = \sum_{k \geq 1}\left[\frac{n}{2^k}\right]^2\]
+        \begin{itemize}
+            \item where $[\cdot]$ denotes rounding
+        \end{itemize}
+    
+    \item \textbf{Double Sum}
+        \[\sum_{i=1}^n \sum_{j=1}^n ij[\gcd(i,j)=1] = \sum_{i=1}^n \phi(i)i^2\]
+    
+    \item \textbf{Average Value}
+        \begin{itemize}
+            \item The average of coprimes of $n$ less than $n$ is $\dfrac{n}{2}$
+        \end{itemize}
+\end{enumerate}

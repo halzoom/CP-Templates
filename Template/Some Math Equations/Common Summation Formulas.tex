@@ -1,0 +1,81 @@
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{Sum of First $n$ Integers}
+        \[\sum_{k = 1}^n k = \frac{n(n + 1)}{2}\]
+    
+    \item \textbf{Sum of Squares}
+        \[\sum_{k = 1}^n k^2 = \frac{n(n + 1)(2n + 1)}{6}\]
+    
+    \item \textbf{Sum of Cubes}
+        \[\sum_{k = 1}^n k^3 = \left[\frac{n(n + 1)}{2}\right]^2\]
+    
+    \item \textbf{Sum of Fourth Powers}
+        \[\sum_{k = 1}^n k^4 = \frac{n(n + 1)(2n + 1)(3n^2 + 3n - 1)}{30}\]
+    
+    \item \textbf{Sum of Fifth Powers}
+        \[\sum_{k = 1}^n k^5 = \frac{n(n + 1)(2n + 1)(3n^2 + 3n - 1)(4n^3 + 6n^2 - 1)}{30}\]
+    
+    \item \textbf{Sum of Odd Numbers}
+        \begin{itemize}
+            \item Sum of odd numbers $\leq n$:
+            \[\sum_{\substack{k = 1 \\ k\text{ odd}}}^n k = \left\lfloor \frac{n + 1}{2} \right\rfloor^2\]
+        \end{itemize}
+    
+    \item \textbf{Sum of Even Numbers}
+        \begin{itemize}
+            \item Sum of even numbers $\leq n$:
+            \[\sum_{\substack{k = 1 \\ k\text{ even}}}^n k = \left\lfloor \frac{n}{2} \right\rfloor \left( \left\lfloor \frac{n}{2} \right\rfloor + 1 \right)\]
+        \end{itemize}
+    
+    \item \textbf{Finite Geometric Series}
+        \[\sum_{k = 0}^n a^k = \frac{1 - a^{n + 1}}{1 - a} \quad (a \neq 1)\]
+    
+    \item \textbf{Weighted Geometric Series (Linear)}
+        \[\sum_{k = 0}^n k a^k = \frac{a[1 - (n + 1)a^n + n a^{n + 1}]}{(1 - a)^2}\]
+    
+    \item \textbf{Weighted Geometric Series (Quadratic)}
+        \[\sum_{k = 0}^n k^2 a^k \]
+        \[= \frac{a[(1 + a) - (n + 1)^2 a^n + (2n^2 + 2n - 1)a^{n + 1} - n^2 a^{n + 2}]}{(1 - a)^3}\]
+    
+    \item \textbf{Binomial Theorem}
+        \[\sum_{k=0}^n \binom{n}{k} = 2^n\]
+    
+    \item \textbf{Alternating Binomial Sum}
+        \[\sum_{k=0}^n (-1)^k \binom{n}{k} = 0\]
+    
+    \item \textbf{Weighted Binomial Sum}
+        \[\sum_{k=0}^n k \binom{n}{k} = n \cdot 2^{n-1}\]
+    
+    \item \textbf{Harmonic Series}
+        \[\sum_{k=1}^n \frac{1}{k} = H_n \approx \ln n + \gamma\]
+    
+    \item \textbf{Sum of Reciprocal Squares}
+        \[\sum_{k=1}^n \frac{1}{k^2} = \frac{\pi^2}{6}\]
+    
+    \item \textbf{Fibonacci Series Sum}
+        \[\sum_{i = 1}^{n} F_i = F_{n + 2} - 1\]
+    
+    \item \textbf{Telescoping Series}
+        \[\sum_{k = 1}^{n} \left( \frac{1}{k} - \frac{1}{k + 1} \right) = 1 - \frac{1}{n + 1}\]
+    
+    \item \textbf{Sine Taylor Series}
+        \[\sum_{k = 0}^\infty \frac{(-1)^k x^{2k + 1}}{(2k + 1)!} = \sin x\]
+    
+    \item \textbf{Cosine Taylor Series}
+        \[\sum_{k = 0}^\infty \frac{(-1)^k x^{2k}}{(2k)!} = \cos x\]
+    
+    \item \textbf{Exponential Taylor Series}
+        \[\sum_{k = 0}^\infty \frac{x^k}{k!} = e^x\]
+    
+    \item \textbf{Geometric Series (Base 2)}
+        \[\sum_{k=1}^n 2^k = 2^{n+1} - 2\]
+    
+    \item \textbf{Finite Geometric Series (General)}
+        \[\sum_{k=1}^n x^k = \frac{x(x^n - 1)}{x - 1}, \quad x \neq 1\]
+        \[\sum_{k=1}^n x^k = \frac{1 - x^{n+1}}{1 - x}, \quad x \neq 1\]
+    
+    \item \textbf{Weighted Geometric Series (Base 2)}
+        \[\sum_{k=1}^n 2^k \cdot k = 2^{n+1} \cdot n - 2\]
+    
+    \item \textbf{Exponential Series with Constant Exponent}
+        \[\sum_{k=1}^n 2^{km} = \frac{2^m(2^{mn} - 1)}{2^m - 1}, \quad m \text{ constant}\]
+\end{enumerate}

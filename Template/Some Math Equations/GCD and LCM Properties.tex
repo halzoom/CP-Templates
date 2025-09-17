@@ -1,0 +1,72 @@
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{Basic GCD Properties}
+        \[\gcd(a, 0) = a\]
+        \[\gcd(a, b) = \gcd(b, a \mod b)\]
+        \begin{itemize}
+            \item Every common divisor of $a$ and $b$ divides $\gcd(a,b)$
+        \end{itemize}
+    
+    \item \textbf{Linear Combination Property}
+        \[\gcd(a + m \cdot b, b) = \gcd(a, b) \quad \text{for any integer } m\]
+    
+    \item \textbf{Multiplicative Property}
+        \begin{itemize}
+            \item If $\gcd(a_1, a_2) = 1$, then $\gcd(a_1 a_2, b) = \gcd(a_1, b) \cdot \gcd(a_2, b)$
+        \end{itemize}
+    
+    \item \textbf{GCD-LCM Product Identity}
+        \[\gcd(a, b) \cdot \operatorname{lcm}(a, b) = |a \cdot b|\]
+    
+    \item \textbf{GCD-LCM Distributive Laws}
+        \[\gcd(a, \operatorname{lcm}(b, c)) = \operatorname{lcm}(\gcd(a, b), \gcd(a, c))\]
+        \[\operatorname{lcm}(a, \gcd(b, c)) = \gcd(\operatorname{lcm}(a, b), \operatorname{lcm}(a, c))\]
+    
+    \item \textbf{Exponent GCD Property}
+        \[\gcd(n^a - 1, n^b - 1) = n^{\gcd(a,b)} - 1\]
+    
+    \item \textbf{Totient Sum Representation}
+        \[\gcd(a, b) = \sum_{\substack{k \mid a \\ k \mid b}} \phi(k)\]
+    
+    \item \textbf{Counting GCD Values}
+        \[\sum_{i=1}^n [\gcd(i, n) = k] = \phi\left(\frac{n}{k}\right)\]
+    
+    \item \textbf{Sum of GCDs}
+        \[\sum_{k=1}^n \gcd(k, n) = \sum_{d \mid n} d \cdot \phi\left(\frac{n}{d}\right)\]
+    
+    \item \textbf{Exponential GCD Sum}
+        \[\sum_{k=1}^n x^{\gcd(k,n)} = \sum_{d \mid n} x^d \cdot \phi\left(\frac{n}{d}\right)\]
+    
+    \item \textbf{Reciprocal GCD Sum}
+        \[\sum_{k=1}^n \frac{1}{\gcd(k, n)} = \frac{1}{n} \sum_{d \mid n} d \cdot \phi(d)\]
+    
+    \item \textbf{Weighted Reciprocal GCD Sum}
+        \[\sum_{k=1}^n \frac{k}{\gcd(k, n)} = \frac{1}{2} \sum_{d \mid n} \phi(d)\]
+    
+    \item \textbf{Modified GCD Sum}
+        \[\sum_{k=1}^n \frac{n}{\gcd(k, n)} = 2 \sum_{k=1}^n \frac{k}{\gcd(k, n)} - 1 \quad (n > 1)\]
+    
+    \item \textbf{Coprime Pairs Count}
+        \[\sum_{i=1}^n \sum_{j=1}^n [\gcd(i, j) = 1] = \sum_{d=1}^n \mu(d) \left\lfloor \frac{n}{d} \right\rfloor^2\]
+    
+    \item \textbf{Sum of GCD Pairs}
+        \[\sum_{i=1}^n \sum_{j=1}^n \gcd(i, j) = \sum_{d=1}^n \phi(d) \left\lfloor \frac{n}{d} \right\rfloor^2\]
+    
+    \item \textbf{Coprime Pairs Product Sum}
+        \[\sum_{i=1}^n \sum_{j=1}^n i \cdot j[\gcd(i, j) = 1] = \sum_{i=1}^n \phi(i)i^2\]
+    
+    \item \textbf{LCM Pairs Sum}
+        \[\sum_{i=1}^n \sum_{j=1}^n \operatorname{lcm}(i, j) = \sum_{l=1}^n \left(\frac{(1 + \lfloor n/l \rfloor) \cdot \lfloor n/l \rfloor}{2} \right)^2 \sum_{d \mid l} \mu(d)ld\]
+    
+    \item \textbf{Multiple GCD-LCM Relationship}
+        \[\gcd(\operatorname{lcm}(a, b), \operatorname{lcm}(b, c), \operatorname{lcm}(a, c))\]
+        \[= \operatorname{lcm}(\gcd(a, b), \gcd(b, c), \gcd(a, c))\]
+    
+    \item \textbf{Array GCD Property}
+        \[\gcd(A_L, A_{L+1}, \ldots, A_R) = \gcd(A_L, A_{L+1} - A_L, \ldots, A_R - A_{R-1})\]
+    
+    \item \textbf{LCM Sum Formula}
+        \begin{itemize}
+            \item $\text{SUM} = \sum_{k=1}^n \operatorname{lcm}(k,n)$
+            \[\text{SUM} = \frac{n}{2} \left( \sum_{d \mid n} \phi(d) \cdot d + 1 \right)\]
+        \end{itemize}
+\end{enumerate}
