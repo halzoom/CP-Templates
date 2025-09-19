@@ -9,7 +9,7 @@ struct SCC {
     int n;
 
     SCC(int n, vector<vector<int>> &adj, vector<vector<int>> &r_adj) :
-            adj(adj), r_adj(r_adj), n(n), id(n + 1), vis(n + 1), dag(n + 1) {
+            adj(adj), r_adj(r_adj), n(n), id(n + 1), vis(n + 1) {
         build();
     };
 
@@ -37,6 +37,7 @@ struct SCC {
                 id[v] = scc.size();
         }
 
+        dag.assign(scc.size() + 1, {});
         for (int u = 1; u <= n; ++u) {
             for (auto v: adj[u]) {
                 if (id[v] != id[u])
@@ -66,6 +67,68 @@ struct SCC {
     }
 };
 
+
+// return node in the dag note in the actual adj for SCC
+vector<pair<int, int>> DAG_to_SCC(vector<vector<int>> &dag) {
+    int n = dag.size() - 1;
+    if (n <= 1) return {};
+
+    vector<int> vis(n + 1), in(n + 1), out(n + 1);
+    for (int u = 1; u <= n; ++u)
+        for (auto v: dag[u])
+            in[v]++, out[u]++;
+
+    function<int(int)> dfs = [&](int u) -> int {
+        if (vis[u]) return -1;
+        vis[u] = 1;
+        if (out[u] == 0) return u;
+        for (int v: dag[u]) {
+            int r = dfs(v);
+            if (r != -1) return r;
+        }
+        return -1;
+    };
+
+    vector<int> matched_sources, matched_sinks;
+    vector<int> never_matched_sources, never_matched_sinks;
+
+    for (int i = 1; i <= n; ++i) {
+        if (in[i])continue;
+        int sink = dfs(i);
+        if (sink != -1) {
+            matched_sources.emplace_back(i);
+            matched_sinks.emplace_back(sink);
+        } else {
+            never_matched_sources.emplace_back(i);
+        }
+    }
+
+    for (int i = 1; i <= n; ++i)
+        if (out[i] == 0 && !vis[i])
+            never_matched_sinks.emplace_back(i);
+
+    vector<int> sources = matched_sources;
+    for (auto u: never_matched_sources)
+        sources.emplace_back(u);
+    vector<int> sinks = matched_sinks;
+    for (auto u: never_matched_sinks)
+        sinks.emplace_back(u);
+
+    int P = matched_sources.size(), N = sources.size();
+    int M = sinks.size(), K = min(N, M);
+    vector<pair<int, int>> idxPairs;
+    for (int i = 0; i < P; ++i) idxPairs.emplace_back(i, (i - 1 + P) % P);
+    for (int i = P; i < K; ++i) idxPairs.emplace_back(i, i);
+    for (int i = K; i < N; ++i) idxPairs.emplace_back(0, i);
+    for (int i = K; i < M; ++i) idxPairs.emplace_back(i, 0);
+
+    vector<pair<int, int>> answer;
+    answer.reserve(idxPairs.size());
+    for (auto [i, j]: idxPairs)
+        answer.emplace_back(sinks[i], sources[j]);
+
+    return answer;
+}
 
 void solve() {
     int n, m;
