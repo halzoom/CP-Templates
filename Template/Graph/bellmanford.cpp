@@ -1,42 +1,102 @@
-#include<bits/stdc++.h>
+#include <bits/stdc++.h>
+
 using namespace std;
 #define int long long
+const int inf = 1e18;
 
-const ll oo = 1e18;
-struct edge {
-    ll x, y, cost;
+struct BellmanFord {
+    vector<int> dist, parent;
+    int has_negative_cycle = -1, n;
+
+    BellmanFord(int s, int _n, vector<array<int, 3>> &edge) {
+        n = _n;
+        parent.assign(n + 1, -1);
+        dist.assign(n + 1, inf);
+        dist[s] = 0;
+
+        for (int i = 1; i <= n; ++i) {
+            has_negative_cycle = -1;
+            for (auto [u, v, w]: edge) {
+                if (dist[u] == inf) continue;
+                if (dist[v] > dist[u] + w) {
+                    dist[v] = max(-inf, dist[u] + w);
+                    parent[v] = u;
+                    has_negative_cycle = v;
+                }
+            }
+        }
+
+        if (has_negative_cycle != -1) {
+            for (int i = 1; i <= n; i++) {
+                for (auto [u, v, w]: edge) {
+                    if (dist[u] == -inf) dist[v] = -inf;
+                    else if (dist[u] != inf && dist[v] > dist[u] + w) {
+                        dist[v] = -inf;
+                    }
+                }
+            }
+        }
+    };
+
+    vector<int> negative_cycle() {
+        if (has_negative_cycle == -1)
+            return {-1};
+        int y = has_negative_cycle;
+        for (int i = 1; i < n; ++i)
+            y = parent[y];
+
+        vector<int> path;
+        for (int cur = y;; cur = parent[cur]) {
+            path.push_back(cur);
+            if (cur == y && path.size() > 1)
+                break;
+        }
+        reverse(path.begin(), path.end());
+        return path;
+    }
 };
-vector <edge> edges;
-vector <ll> dis;
-vector<bool> in_negative_cycle;
-vector <ll> v;
 
-void bellman_ford(ll u) {
-    dis.assign(n + 1, oo);
-    in_negative_cycle.assign(n + 1, false);
-    dis[u] = 0;
-    for (int i = 0; i < n - 1; i++) {
-        for (auto &e: edges) {
-            if (dis[e.x] != oo && dis[e.x] + e.cost < dis[e.y]) {
-                dis[e.y] = dis[e.x] + e.cost;
-            }
+void solve() {
+    int n, m, q, s;
+    while (true) {
+        cin >> n >> m >> q >> s;
+        if (!n)break;
+        s++;
+        vector<array<int, 3>> edge(m);
+        for (int i = 0, u, v, w; i < m; ++i) {
+            cin >> u >> v >> w;
+            edge[i] = {u + 1, v + 1, w};
+        }
+
+        BellmanFord T(s, n, edge);
+        auto D = T.dist;
+        while (q--) {
+            int u;
+            cin >> u, ++u;
+            if (D[u] >= inf)
+                cout << "Impossible\n";
+            else if (D[u] <= -inf)
+                cout << "-Infinity\n";
+            else
+                cout << D[u] << '\n';
         }
     }
-    for (auto &e: edges) {
-        if (dis[e.x] != oo && dis[e.x] + e.cost < dis[e.y]) { in_negative_cycle[e.y] = true; }
+
+}
+
+signed main() {
+    ios_base::sync_with_stdio(false);
+    cin.tie(nullptr);
+#ifdef HALZOOM
+    freopen("Input.txt", "r", stdin);
+    freopen("Output.txt", "w", stdout);
+#endif
+
+    int test = 1;
+//    cin >> test;
+
+    for (int i = 1; i <= test; ++i) {
+        solve();
     }
-    queue <ll> q;
-    for (int i = 1; i <= n; i++) {
-        if (in_negative_cycle[i]) q.push(i);
-    }
-    while (!q.empty()) {
-        ll x = q.front();
-        q.pop();
-        for (auto e: edges) {
-            if (e.x == x && !in_negative_cycle[e.y]) {
-                in_negative_cycle[e.y] = true;
-                q.push(e.y);
-            }
-        }
-    }
+    return 0;
 }

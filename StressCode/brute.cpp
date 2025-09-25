@@ -1,44 +1,100 @@
-#include<bits/stdc++.h>
+#include <bits/stdc++.h>
 
 using namespace std;
+const int N = 5004, inf = 1e9;
 
-struct apos {
-    long long a;
-    long long b;
+struct Trie {
+private:
+    struct Node {
+        map<char, int> child;
+        bool isEnd = false;
 
-    friend bool operator<(apos a, apos b) {
-        return a.a > b.a;
+        int &operator[](char x) { return child[x]; }
+    };
+
+public:
+    vector<Node> node;
+
+    Trie() {
+        node.clear();
+        node.emplace_back();
+    };
+
+    int newNode() {
+        node.emplace_back();
+        return node.size() - 1;
     }
-} ap[200000];
 
-int main() {
-    ios::sync_with_stdio(false), cin.tie(0);
-    int T, n, i;
-    long long l, r, ans, cans, mx;
-    for (cin >> T; T > 0; T--) {
-        cin >> n;
-        ans = 0;
-        for (i = 0; i < n; i++) {
-            cin >> l >> r;
-            ans += r - l;
-            ans -= l;
-            ap[i].a = r + l;
-            ap[i].b = l;
+    void update(string &s) {
+        int cur = 0;
+        for (auto c: s) {
+            if (node[cur][c] == 0)
+                node[cur][c] = newNode();
+            cur = node[cur][c];
         }
-        sort(ap, ap + n);
-        if (n % 2 == 0) {
-            for (i = 0; i < n / 2; i++)ans += ap[i].a;
-            cout << ans << '\n';
-            continue;
+        node[cur].isEnd = true;
+    }
+};
+
+int dist[N][N];
+
+void solve() {
+    int n;
+    cin >> n;
+    Trie trie;
+    string s;
+    for (int i = 0; i < n; ++i) {
+        cin >> s;
+        trie.update(s);
+    }
+    cin >> s;
+    deque<array<int, 3>> pq;
+    for (int i = 0; i <= s.size(); ++i)
+        for (int j = 0; j < N; ++j)
+            dist[i][j] = inf;
+
+    pq.push_back({0, 0, 0});
+    dist[0][0] = 0;
+    while (!pq.empty()) {
+        auto [w, idx, cur] = pq.front();
+        pq.pop_front();
+
+        if (dist[idx][cur] < w)continue;
+        if (idx < s.size() and dist[idx + 1][cur] > w + 1) {
+            dist[idx + 1][cur] = w + 1;
+            pq.push_back({w + 1, idx + 1, cur});
         }
-        cans = 0;
-        mx = 0;
-        for (i = 0; i < n / 2; i++)cans += ap[i].a;
-        for (i = 0; i < n; i++) {
-            if (i < n / 2)mx = max(mx, cans - ap[i].a + ap[i].b + ap[n / 2].a);
-            else mx = max(mx, cans + ap[i].b);
+
+        if (trie.node[cur].isEnd and dist[idx][0] > w) {
+            dist[idx][0] = w;
+            pq.push_front({w, idx, 0});
         }
-        cout << ans + mx << '\n';
+        for (auto [c, nxt]: trie.node[cur].child) {
+            if (idx < s.size() and dist[idx + 1][nxt] > w + (c != s[idx])) {
+                dist[idx + 1][nxt] = w + (c != s[idx]);
+                if (c != s[idx])
+                    pq.push_back({w + 1, idx + 1, nxt});
+                else
+                    pq.push_front({w, idx + 1, nxt});
+            }
+            if (dist[idx][nxt] > w + 1) {
+                dist[idx][nxt] = w + 1;
+                pq.push_back({w + 1, idx, nxt});
+            }
+        }
+    }
+    cout << dist[s.size()][0] << '\n';
+}
+
+signed main() {
+    ios_base::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int test = 1;
+//    cin >> test;
+
+    for (int i = 1; i <= test; ++i) {
+        solve();
     }
     return 0;
 }

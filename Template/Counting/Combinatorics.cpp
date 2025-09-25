@@ -19,6 +19,7 @@ struct Combinatorics {
     // 8
     int modInv(int n) { return exp(n, mod - 2); }
     int exp(int base, int pow) {
+        if (pow < 0)return 0;
         int res = 1;
         while (pow) {
             if (pow & 1) res = (res * base) % mod;

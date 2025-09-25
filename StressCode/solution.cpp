@@ -1,107 +1,129 @@
-#include <iostream>
-#include <vector>
-#include <string>
-#include <map>
-#include <set>
-#include <algorithm>
-#include <cmath>
-#include <numeric>
+#include <bits/stdc++.h>
 
 using namespace std;
-typedef long long ll;
-const ll oo = 1e18;
-const int N = 3e6 + 10;
-const int mod = 1e9 + 7;
-vector<int> fact(N);
-vector<int> inv(N);
 
-int add(int a, int b) {
-    return (a + b) % mod;
-}
+#define int long long
+#define bint __int128
+#define _3bkarm cin.tie(NULL); cout.tie(NULL); ios::sync_with_stdio(false);
 
-int mul(int a, int b) {
-    return (1LL * a * b) % mod;
-}
+const int oo = 2e18;
 
-int fastpow(int a, int b) {
-    int res = 1;
-    while (b) {
-        if (b & 1)
-            res = mul(res, a);
-        a = mul(a, a);
-        b >>= 1;
-    }
-    return res;
-}
+struct SuffixAutomaton {
+    static const int A = 27;
 
-int modinv(int a) {
-    return fastpow(a, mod - 2);
-}
+    struct State {
+        int len = 0, lnk = -1, cnt = 0, d = 1;
+        int firstPos = 0, sum = 0; // if you need
+        bool isClone = 0;
+        array<int, A> nxt;
+        State() { nxt.fill(-1); }
+    };
 
-void init() {
-    fact[0] = 1;
-    for (int i = 1; i < N; i++)
-        fact[i] = mul(fact[i - 1], i);
-    inv[N - 1] = modinv(fact[N - 1]);
-    for (int i = N - 2; i >= 0; i--)
-        inv[i] = mul(inv[i + 1], i + 1);
-}
+    vector<State> t{{}};
+    int lst = 0;
 
-int nCr(int n, int r) {
-    if (r > n || r < 0)
-        return 0;
-    return mul(fact[n], mul(inv[r], inv[n - r]));
-}
+    SuffixAutomaton() {}
 
-int main() {
-    ios::sync_with_stdio(false);
-    cin.tie(0);
-    cout.tie(0);
-    //init();
-    int t = 1;
-    cin >> t;
-    while (t--) {
-        int n;
-        cin >> n;
-        ll sum = 0;
-        vector<ll> l(n), r(n);
-        for (int i = 0; i < n; ++i) cin >> l[i] >> r[i], sum += r[i] - l[i];
-        vector<ll> lr(n);
-        ll suml = 0;
-        for (int i = 0; i < n; ++i) {
-            lr[i] = l[i] + r[i];
-            suml += l[i];
+    int get(char ch) { return ch == '#'? 26 : ch - 'A'; }
+
+    void insert(int ch) {
+        int c = get(ch), me = t.size(), p = lst;
+        t.push_back({});
+        t[me].len = t[p].len + 1;
+        t[me].firstPos = t[me].len - 1;
+        t[me].cnt = 1;
+        t[me].lnk = 0;
+        lst = me;
+
+        while(~p && t[p].nxt[c] == -1) {
+            t[p].nxt[c] = me;
+            p = t[p].lnk;
         }
-        vector<int> idx(n);
-        for (int i = 0; i < n; ++i) idx[i] = i;
-        sort(idx.begin(), idx.end(), [&](int a, int b) {
-            if (lr[a] != lr[b]) return lr[a] > lr[b];
-            return a < b;
-        });
-        vector<int> pos(n);
-        for (int i = 0; i < n; ++i) pos[idx[i]] = i;
-        vector<ll> pref(n + 1, 0);
-        for (int i = 0; i < n; ++i) pref[i + 1] = pref[i] + lr[idx[i]];
 
-        if (n % 2 == 0) {
-            int mid = n / 2;
-            ll ans = pref[mid] - suml;
-            cout << sum + ans << '\n';
-        } else {
-            int mid = n / 2;
-            ll ans = -oo;
-            for (int k = 0; k < n; ++k) {
-                int p = pos[k];
-                ll temp = 0;
-                if (p < mid) {
-                    temp = pref[mid + 1] - lr[k];
-                } else {
-                    temp = pref[mid];
-                }
-                temp = temp - suml + l[k];
-                if (temp > ans) ans = temp;
-            }
-            cout << sum + ans << '\n';
+        if(p == -1) return;
+
+        int q = t[p].nxt[c];
+        if(t[q].len == t[p].len + 1) {
+            t[me].lnk = q;
+            return;
+        }
+
+        int clone = t.size();
+        t.push_back(t[q]);
+
+        t[clone].len = t[p].len + 1;
+        t[clone].isClone = 1;
+        t[clone].cnt = 0;
+
+        while (~p && t[p].nxt[c] == q) {
+            t[p].nxt[c] = clone;
+            p = t[p].lnk;
+        }
+
+        t[q].lnk = t[me].lnk = clone;
+    }
+
+    int move(int v, char c) { return ~v? t[v].nxt[get(c)] : -1; }
+};
+
+void getShitDone() {
+    int n; cin >> n;
+    SuffixAutomaton sa;
+
+    sa.insert('#');
+    for(int i = 0; i < n; ++i) {
+        string s; cin >> s;
+        for(char &ch: s) sa.insert(ch);
+        sa.insert('#');
+    }
+
+    string s; cin >> s;
+    n = size(s);
+
+    int sz = size(sa.t);
+    vector dp(n + 1, vector<int>(sz, oo));
+    deque<array<int, 2>> q;
+
+    auto push = [&](int i, int u, int w, int cst) {
+        if(i > n || w + cst >= dp[i][u]) return;
+        dp[i][u] = w + cst;
+        if(cst) q.push_back({i, u});
+        else q.push_front({i, u});
+    };
+
+    int st = sa.move(0, '#');
+
+    push(0, st, 0, 0);
+
+    while(!q.empty()) {
+        auto [i, u] = q.front();
+        q.pop_front();
+
+        push(i + 1, u, dp[i][u], 1);
+
+        int v = sa.move(u, '#');
+        if(~v) push(i, st, dp[i][u], 0);
+
+        for(int c = 'A'; c <= 'Z'; ++c) {
+            v = sa.move(u, c);
+            if(v == -1) continue;
+            push(i, v, dp[i][u], 1);
+            push(i + 1, v, dp[i][u], (s[i] != c));
         }
     }
+
+    cout << dp[n][1] << '\n';
+}
+
+signed main() {
+    _3bkarm
+
+    int ts = 1;
+//    cin >> ts;
+    while (ts--) {
+        getShitDone();
+        if (ts != 0) cout << '\n';
+    }
+
+    return 0;
 }
