@@ -26,7 +26,10 @@ void fwht(vector<__int128> &a, int inv, int f) {
     }
 }
 
-// h[r] = sum of(frq[p] * g[p @ r]) over all masks p , where @ means any operation
+// T[x] = sum of(frq[y] * g[x @ y]) over all masks p , where @ means any operation
+// g[x^y] = (−1)^popcount(x&y) -> for XOR convolution
+// g[x|y] = (y & x == y) -> for OR convolution -> zeta transform
+// g[x&y] = (y & x == x) -> for AND convolution -> zeta transform
 vector<__int128> multiply(vector<__int128> a, vector<__int128> b, int f) {  // 0:AND, 1:OR, 2:XOR
     int sz = a.size();
     fwht(a, 0, f);

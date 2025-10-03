@@ -17,7 +17,7 @@ struct BellmanFord {
         for (int i = 1; i <= n; ++i) {
             has_negative_cycle = -1;
             for (auto [u, v, w]: edge) {
-                if (dist[u] == inf) continue;
+                if (dist[u] == inf) continue; // remove if you want to check for negative cycle only
                 if (dist[v] > dist[u] + w) {
                     dist[v] = max(-inf, dist[u] + w);
                     parent[v] = u;
@@ -30,7 +30,7 @@ struct BellmanFord {
             for (int i = 1; i <= n; i++) {
                 for (auto [u, v, w]: edge) {
                     if (dist[u] == -inf) dist[v] = -inf;
-                    else if (dist[u] != inf && dist[v] > dist[u] + w) {
+                    else if (dist[u] != inf and dist[v] > dist[u] + w) {
                         dist[v] = -inf;
                     }
                 }
@@ -48,7 +48,7 @@ struct BellmanFord {
         vector<int> path;
         for (int cur = y;; cur = parent[cur]) {
             path.push_back(cur);
-            if (cur == y && path.size() > 1)
+            if (cur == y and path.size() > 1)
                 break;
         }
         reverse(path.begin(), path.end());

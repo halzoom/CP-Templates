@@ -50,9 +50,10 @@ int nCr_Parity(int n, int r) {
 }
 // 5
 int C(int n, int k) {
-    double res = 1;
+    long double res = 1;
     for (int i = 1; i <= k; ++i) res = res * (n - k + i) / i;
-    return (int)(res + 0.01);
+    return (int) (res + 0.01);
+}
 // 14
 vector<vector<int>> Pascal(int n) {
     vector<vector<int>> C(n + 1, vector<int>(n + 1));

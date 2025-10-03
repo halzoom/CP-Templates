@@ -1,4 +1,5 @@
 #include<bits/stdc++.h>
+
 using namespace std;
 #define int long long
 
@@ -14,7 +15,7 @@ struct Node {
 
 class PalindromicTree {
 public:
-    vector <Node> tree;
+    vector<Node> tree;
     string s;
     int suff;
 
@@ -100,8 +101,8 @@ public:
         }
     }
 
-    vector <string> getPalindromes() {
-        vector <string> result;
+    vector<string> getPalindromes() {
+        vector<string> result;
         for (int i = 2; i < tree.size(); ++i) {
             int start = tree[i].firstPos - tree[i].len + 1;
             result.push_back(s.substr(start, tree[i].len));
