@@ -39,24 +39,37 @@ struct HLD {
     }
 
     vector<pair<int, int>> path(int u, int v, bool onEdges = false) {
-        vector<pair<int, int>> left, right;
+        vector<pair<int, int>> path;
+        while (head[u] != head[v]) {
+            if (depth[head[u]] >= depth[head[v]])swap(u, v);
+            path.emplace_back(in[head[v]], in[v]);
+            v = parent[head[v]];
+        }
+        if (in[u] >= in[v])
+            path.emplace_back(in[v] + onEdges, in[u]);
+        else
+            path.emplace_back(in[u] + onEdges, in[v]);
+        return path;
+    }
+
+    array<vector<pair<int, int>>, 2> ordered_path(int u, int v, bool onEdge = false) {
+        array<vector<pair<int, int>>, 2> path; // path[0] -> from u to lca
         while (head[u] != head[v]) {
             if (depth[head[u]] >= depth[head[v]]) {
-                left.emplace_back(in[head[u]], in[u]);
+                path[0].emplace_back(in[head[u]], in[u]);
                 u = parent[head[u]];
             } else {
-                right.emplace_back(in[head[v]], in[v]);
+                path[1].emplace_back(in[head[v]], in[v]);
                 v = parent[head[v]];
             }
         }
-        if (in[u] >= in[v])
-            left.emplace_back(in[v], in[u]);
+        if (in[u] <= in[v])
+            path[1].emplace_back(in[u] + onEdge, in[v]);
         else
-            right.emplace_back(in[u], in[v]);
-        reverse(right.begin(), right.end());
-        for (auto x: right)
-            left.emplace_back(x);
-        return left;
+            path[0].emplace_back(in[v] + onEdge, in[u]);
+        reverse(path[1].begin(), path[1].end());
+
+        return path;
     }
 };
 
@@ -115,6 +128,7 @@ public:
         return query(0, SegSize - 1, 0, l, r);
     }
 };
+
 
 void solve() {
     int n, q;

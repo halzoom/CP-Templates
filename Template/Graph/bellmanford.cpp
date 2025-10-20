@@ -81,7 +81,6 @@ void solve() {
                 cout << D[u] << '\n';
         }
     }
-
 }
 
 signed main() {
