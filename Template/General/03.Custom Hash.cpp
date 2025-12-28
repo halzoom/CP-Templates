@@ -2,6 +2,27 @@
 using namespace std;
 #define int long long
 
+mt19937 rng(chrono::system_clock::now().time_since_epoch().count());
+// for strings
+struct custom_hash {
+    static uint64_t splitmix64(uint64_t x) {
+        x += 0x9e3779b97f4a7c15;
+        x = (x ^ (x >> 30)) * 0xbf58476d1ce4e5b9;
+        x = (x ^ (x >> 27)) * 0x94d049bb133111eb;
+        return x ^ (x >> 31);
+    }
+
+    size_t operator()(const string &s) const noexcept {
+        static const uint64_t FIXED_RANDOM = chrono::high_resolution_clock::now().time_since_epoch().count();
+        uint64_t x = std::hash<string>()(s) + FIXED_RANDOM + 0x9e3779b97f4a7c15ULL;
+        x += 0x9e3779b97f4a7c15ULL;
+        x = (x ^ (x >> 30)) * 0xbf58476d1ce4e5b9ULL;
+        x = (x ^ (x >> 27)) * 0x94d049bb133111ebULL;
+        x = x ^ (x >> 31);
+        return (size_t) x;
+    }
+};
+
 struct custom_hash {
     static uint64_t splitmix64(uint64_t x) {
         x += 0x9e3779b97f4a7c15;

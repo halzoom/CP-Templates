@@ -1,0 +1,4 @@
+1. Order of permutation is the minimum number of operation to make
+   identity (pi = i) , ord(p) = lcm(all cycle length).
+
+2.

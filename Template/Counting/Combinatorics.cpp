@@ -42,6 +42,18 @@ struct Combinatorics {
     int Catalan(int n) { return modInv(n + 1) * nCr(2 * n, n) % mod; }
     int invCatalan(int n) { return nCr(2 * n, n - 1); }
 } comb(N);
+
+// nCr(n , r) when n and r are large integers and mod is small prime
+int lucas(int n, int r) {
+    int answer = 1;
+    while (n or r) {
+        int A = n % mod, B = r % mod;
+        answer = answer * comb.nCr(A, B) % mod;
+        n /= mod, r /= mod;
+    }
+    return answer;
+}
+
 // 5
 //  nCr is odd if r is a submask of n
 int nCr_Parity(int n, int r) {
