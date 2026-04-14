@@ -11,6 +11,3 @@
 
 ### Here's my stress-test
 - [Stress Code](StressCode/)
-
-### Here's my CPC Contests
-- [CPC](./CPC%20Contests)
