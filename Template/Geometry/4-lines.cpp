@@ -1,6 +1,45 @@
 #include<bits/stdc++.h>
+
 using namespace std;
 #define int long long
+
+using T = double;
+
+struct pt {
+    T x, y;
+
+    pt() {}
+
+    pt(T x, T y) : x(x), y(y) {}
+
+    pt operator+(const pt &p) const { return {x + p.x, y + p.y}; }
+
+    pt operator-(const pt &p) const { return {x - p.x, y - p.y}; }
+
+    pt operator*(T k) const { return {x * k, y * k}; }
+
+    pt operator/(T k) const { return {x / k, y / k}; }
+};
+
+T dot(pt a, pt b) {
+    return a.x * b.x + a.y * b.y;
+}
+
+T cross(pt a, pt b) {
+    return a.x * b.y - a.y * b.x;
+}
+
+pt perp(pt a) {
+    return {-a.y, a.x};   // rotate 90 degrees
+}
+
+T sq(pt a) {
+    return dot(a, a);
+}
+
+double abs(pt a) {
+    return sqrt(sq(a));
+}
 
 struct line {
     pt v;
@@ -55,7 +94,7 @@ line bisector(line l1, line l2, bool interior) {
             l2.c / abs(l2.v) + l1.c / abs(l1.v) * sign};
 }
 
-tuple <ll, ll, ll> normalize(pt p1, pt p2) {
+tuple<ll, ll, ll> normalize(pt p1, pt p2) {
     ll a = p2.y - p1.y;
     ll b = p1.x - p2.x;
     ll c = (p2.x * p1.y) - (p1.x * p2.y);

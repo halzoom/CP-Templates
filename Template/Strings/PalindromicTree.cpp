@@ -21,7 +21,7 @@ public:
 
     PalindromicTree(const string &str) : s(str) {
         tree.emplace_back(-1, 0);
-        tree.emplace_back(0, 0);
+        tree.emplace_bac k(0, 0);
         tree[0].suffLink = 0;
         suff = 1;
         build();

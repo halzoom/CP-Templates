@@ -1,4 +1,5 @@
 #include<bits/stdc++.h>
+
 using namespace std;
 #define int long long
 
@@ -8,7 +9,7 @@ using db = long double;
 class Pollard {
 public:
     map<ul, int> cnt_primes;
-    vector <ul> primes, divisors;
+    vector<ul> primes, divisors;
 
     ul modMul(ul a, ul b, const ul mod) {
         long long ret = a * b - mod * (ul) ((db) a * b / mod);
@@ -76,3 +77,28 @@ public:
         calcDivisorsRec(1, 0);
     }
 } pollard;
+
+void solve() {
+    int n;
+    cin >> n;
+    pollard.cnt_primes.clear();
+    pollard.factor_rec(n, pollard.cnt_primes);
+    cout << pollard.cnt_primes.size() << endl;
+}
+
+signed main() {
+    ios_base::sync_with_stdio(false);
+    cin.tie(nullptr);
+#ifdef HALZOOM
+    freopen("Input.txt", "r", stdin);
+    freopen("Output.txt", "w", stdout);
+#endif
+
+    int test = 1;
+//    cin >> test;
+
+    for (int i = 1; i <= test; ++i) {
+        solve();
+    }
+    return 0;
+}

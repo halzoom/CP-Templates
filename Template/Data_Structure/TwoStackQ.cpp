@@ -48,3 +48,44 @@ struct TwoStackQ {
         if (!b.empty()) b.pop();
     }
 };
+
+void solve() {
+    int n, m, d;
+    cin >> n >> m >> d;
+    vector<int> dp(n + 1);
+    int t = 1;
+    for (int i = 0, a, b, ti; i < m; ++i) {
+        cin >> a >> b >> ti;
+        TwoStackQ T;
+        vector<int> cur_dp(n + 1, -inf);
+        int k = min(n, d * (ti - t)), r = 1, l = 1;
+        for (int j = 1; j <= n; ++j) {
+            while (r <= n and r <= j + k)
+                T.push(dp[r++]);
+            while (l < j - k)
+                T.pop(), ++l;
+            cur_dp[j] = b - abs(a - j) + T.get().mx;
+        }
+
+        swap(dp, cur_dp);
+        t = ti;
+    }
+    cout << *max_element(dp.begin(), dp.end()) << '\n';
+}
+
+signed main() {
+    ios_base::sync_with_stdio(false);
+    cin.tie(nullptr);
+#ifdef HALZOOM
+    freopen("Input.txt", "r", stdin);
+    freopen("Output.txt", "w", stdout);
+#endif
+
+    int test = 1;
+//    cin >> test;
+
+    for (int i = 1; i <= test; ++i) {
+        solve();
+    }
+    return 0;
+}

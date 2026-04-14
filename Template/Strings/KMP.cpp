@@ -1,4 +1,5 @@
 #include<bits/stdc++.h>
+
 using namespace std;
 #define int long long
 
@@ -13,7 +14,7 @@ struct KMP {
         pi.assign(n + 1, {});
         for (int i = 1; i < n; ++i) {  // O(n)
             int k = pi[i - 1];
-            while (k > 0 and pat[k] != pat[i]) k = pi[k - 1];
+            while (k and pat[k] != pat[i]) k = pi[k - 1];
             k += pat[i] == pat[k];
             pi[i] = k;
         }
@@ -33,11 +34,11 @@ struct KMP {
 
     // count the number of appearances of each prefix
     vector<int> count() {
-        vector<int> ans(n + 1);
-        for (int i = 0; i < n; i++) ans[pi[i]]++;
-        for (int i = n - 1; i > 0; i--) ans[pi[i - 1]] += ans[i];
-        for (int i = 0; i < n; i++) ans[i]++;
-        return ans;
+        vector<int> answer(n + 1);
+        for (int i = 0; i < n; i++) answer[pi[i]]++;
+        for (int i = n - 1; i > 0; i--) answer[pi[i - 1]] += answer[i];
+        for (int i = 0; i < n; i++) answer[i]++;
+        return answer;
     }
 
     // find all periods of a string
@@ -45,19 +46,19 @@ struct KMP {
     // generate the whole string by repeating the prefix
     // if we want a full period the n % (n - k) == 0
     vector<int> period() {
-        vector<int> ans;
+        vector<int> answer;
         int k = pi[n - 1];
         while (k) {
-            ans.push_back(n - k);
+            answer.push_back(n - k);
             k = pi[k - 1];
         }
-        ans.push_back(n);
-        return ans;
+        answer.push_back(n);
+        return answer;
     }
 
-    vector <vector<int>> compute_automaton(string s) {
+    vector<vector<int>> compute_automaton(string s) {
         s += '#';
-        vector <vector<int>> aut(s.size(), vector<int>(26));
+        vector<vector<int>> aut(s.size(), vector<int>(26));
         for (int i = 0; i < s.size(); ++i) {
             for (int c = 0; c < 26; ++c) {
                 if (i and c + 'a' != s[i]) aut[i][c] = aut[pi[i - 1]][c];
@@ -69,12 +70,12 @@ struct KMP {
 };
 
 vector<int> computePrefix(string &s) {
-    vector<int> longestPrefix(s.size());
+    vector<int> pi(s.size());
     for (int i = 1; i < s.size(); ++i) {
-        int k = longestPrefix[i - 1];
-        while (k and s[k] != s[i]) k = longestPrefix[k - 1];
+        int k = pi[i - 1];
+        while (k and s[k] != s[i]) k = pi[k - 1];
         k += s[k] == s[i];
-        longestPrefix[i] = k;
+        pi[i] = k;
     }
-    return longestPrefix;
+    return pi;
 }

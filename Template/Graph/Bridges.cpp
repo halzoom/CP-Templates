@@ -2,117 +2,63 @@
 
 using namespace std;
 #define int long long
-const int inf = 1e18;
 
 struct Bridges {
-    vector<vector<int>> adj, tree, Components;
-    vector<int> low, vis, depth, stack, id;
-    int n;
+    int n, timer = 1, sz = 0;
+    vector<vector<int>> adj, tree, BCC;
+    vector<int> in, low, st, root;
     vector<pair<int, int>> bridge;
 
-    Bridges(int n, vector<vector<int>> &adj) :
-            adj(adj), n(n), depth(n + 1), id(n + 1), vis(n + 1), low(n + 1, inf) {
-        build();
+    Bridges(int _n, vector<vector<int>> &_adj) {
+        n = _n;
+        adj = _adj;
+        build(adj);
     };
 
-    void dfs(int u, int p) {
-        stack.emplace_back(u);
-        low[u] = depth[u];
-        vis[u] = 1;
-        for (auto v: adj[u]) {
-            if (v == p)continue;
-            if (vis[v]) {
-                low[u] = min(low[u], depth[v]);
+    void build(auto &_adj) {
+        adj = _adj;
+        in.assign(n + 1, 0);
+        low.assign(n + 1, 0);
+        root.assign(n + 1, 0);
+
+        for (int u = 1; u <= n; ++u)
+            if (!in[u]) dfs(u);
+
+        sz = BCC.size();
+        tree.assign(n + 1, {});
+        for (int u = 1; u <= n; u++)
+            for (int v: adj[u])
+                if (root[u] != root[v])
+                    tree[root[u]].push_back(root[v]);
+    }
+
+    void dfs(int u, int p = 0) {
+        st.push_back(u);
+        in[u] = low[u] = timer++;
+        bool pFound = false; // for multiple edges
+        for (int &v: adj[u]) {
+            if (!pFound and v == p) {
+                pFound = true;
                 continue;
             }
-            depth[v] = depth[u] + 1;
-            dfs(v, u);
+
+            if (!in[v]) dfs(v, u);
             low[u] = min(low[u], low[v]);
-            if (low[v] > depth[u])
-                bridge.emplace_back(u, v);
+            if (low[v] > in[u]) bridge.emplace_back(u, v);
         }
-        if (low[u] == depth[u]) {
-            vector<int> comp;
-            while (stack.back() != u)
-                comp.emplace_back(stack.back()), stack.pop_back();
-            comp.emplace_back(stack.back());
-            stack.pop_back();
-            Components.emplace_back(comp);
-            for (auto v: comp)
-                id[v] = Components.size();
+
+        if (low[u] == in[u]) {
+            vector<int> c;
+            while (st.back() != u)
+                c.push_back(st.back()), st.pop_back();
+            c.push_back(st.back()), st.pop_back();
+            for (int v: c) root[v] = c.front();
+            BCC.push_back(c);
         }
-    }
-
-    void build() {
-        for (int i = 1; i <= n; ++i)
-            if (!vis[i])
-                dfs(i, 0);
-
-        tree.assign(Components.size() + 1, {});
-        for (int u = 1; u <= n; ++u) {
-            for (auto v: adj[u]) {
-                if (id[u] != id[v])
-                    tree[id[u]].emplace_back(id[v]);
-            }
-        }
-    }
-};
-
-struct LCA {
-    vector<vector<int>> ancestor;
-    vector<int> level;
-    int LG;
-
-    LCA(vector<vector<int>> &adj) {
-        int n = (int) adj.size();
-        LG = __lg(n) + 1;
-        ancestor.assign(LG, vector<int>(n));
-        level.assign(n, {});
-        build(1, 0, adj);
-        for (int i = 1; i < LG; ++i)
-            for (int u = 1; u < n; ++u)
-                ancestor[i][u] = ancestor[i - 1][ancestor[i - 1][u]];
-
-    }
-
-    void build(int u, int p, vector<vector<int>> &adj) {
-        for (auto v: adj[u]) {
-            if (v == p) continue;
-            level[v] = level[u] + 1;
-            ancestor[0][v] = u;
-            build(v, u, adj);
-        }
-    }
-
-    int KthAnc(int u, int k) {
-        for (int i = 0; k; ++i, k >>= 1) {
-            if (k & 1) u = ancestor[i][u];
-        }
-        return u;
-    }
-
-    int getLCA(int u, int v) {
-        if (level[u] > level[v]) swap(u, v);
-        int k = level[v] - level[u];
-        v = KthAnc(v, k);
-        if (v == u) return v;
-        for (int i = LG - 1; ~i; --i) {
-            if (ancestor[i][v] != ancestor[i][u]) {
-                v = ancestor[i][v];
-                u = ancestor[i][u];
-            }
-        }
-        return ancestor[0][u];
-    }
-
-    int getDist(int u, int v) {
-        int lca = getLCA(u, v);
-        return level[u] + level[v] - 2 * level[lca];
     }
 };
 
 void solve() {
-
     int n, m;
     cin >> n >> m;
     vector<vector<int>> adj(n + 1);
@@ -122,15 +68,26 @@ void solve() {
         adj[v].emplace_back(u);
     }
 
-    Bridges G(n, adj);
-    LCA lc(G.tree);
-    int q;
-    cin >> q;
-    while (q--) {
-        int u, v;
-        cin >> u >> v;
-        cout << lc.getDist(G.id[u], G.id[v]) << '\n';
-    }
+    Bridges T(n, adj);
+    if (T.bridge.size())
+        return void(cout << "0\n");
+
+    vector<int> vis(n + 1), depth(n + 1);
+    function<void(int, int)> go = [&](int u, int p) {
+        vis[u] = 1;
+        for (auto v: adj[u]) {
+            if (v == p)continue;
+            if (!vis[v]) {
+                cout << u << ' ' << v << '\n';
+                depth[v] = depth[u] + 1;
+                go(v, u);
+            } else if (depth[v] < depth[u])
+                cout << u << ' ' << v << '\n';
+        }
+    };
+
+    go(1, 0);
+
 }
 
 signed main() {

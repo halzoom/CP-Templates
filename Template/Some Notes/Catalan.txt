@@ -1,0 +1,23 @@
+1. Remember, any time you manage to prove that a counting problem has a solution
+   expressed by combining two identical subproblems with total size = n−1,
+   it means this problem has the same solution as all other catalan problems.
+
+2. Number of correct bracket sequence consisting of n opening and n closing brackets.
+3. The number of rooted full binary trees with n + 1 nodes (vertices are not numbered).
+4. The number of triangulations of a convex polygon with n + 2 sides (i.e. the number
+   of partitions of polygon into disjoint triangles by using the diagonals).
+
+5. The number of ways to connect the 2n points on a circle to form n disjoint lines.
+
+6. The number of non-isomorphic full binary trees with n internal nodes (i.e. nodes
+   having at least one son).
+
+7. The number of monotonic lattice paths from point (0, 0) to point (n, n) in a square
+   lattice of size n*n, which do not pass above the main diagonal
+
+8. Number of permutations of length n that can be stack sorted (i.e. it can be shown
+   that the rearrangement is stack sorted if and only if there is no such index i < j < k,
+   such that a_k < a_i < a_j).
+
+9. The number of ways to cover the ladder 1...n using n rectangles (The ladder consists of n
+   columns, where i^{th} column has a height i).

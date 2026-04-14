@@ -27,22 +27,3 @@ int isBipartite(int n, vector <vector<int>> &graph) {
     }
     return cnt;
 }
-
-//// AbdelSame3 Code
-// clockwise
-int dx[8] = {-1, -1, 0, 1, 1, 1, 0, -1};
-int dy[8] = {0, 1, 1, 1, 0, -1, -1, -1};
-int dx[] = {0, 0, -1, 1, -1, 1, -1, 1};
-int dy[] = {-1, 1, 0, 0, -1, -1, 1, 1};
-vector <ll> co;
-
-bool dfs_bipartite(ll n, ll c, ll p) {
-    co[n] = c;
-    ll ans = true;
-    for (auto &x: adj[n]) {
-        if (x == p) continue;
-        if (co[x] == c) return false;
-        if (co[x] == -1) ans &= dfs_bipartite(x, !c, n);
-    }
-    return ans;
-}

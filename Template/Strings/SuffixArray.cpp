@@ -1,13 +1,15 @@
-#include<bits/stdc++.h>
+#include <bits/stdc++.h>
+
 using namespace std;
 #define int long long
 
 struct SuffixArray {
     // suff is the suffix array with the empty suffix being suff[0]
     // lcp[i] holds the lcp between sa[i], sa[i - 1]
+    // pos is rank of index i in suffix
     int n;
     vector<int> suff, lcp, pos, lg;
-    vector <array<int, 21>> table;
+    vector<array<int, 21>> table;
 
     SuffixArray(string &s, int lim = 256) {
         n = s.size() + 1;
@@ -33,6 +35,7 @@ struct SuffixArray {
         for (int i = 0, j; i < n - 1; lcp[pos[i++]] = k)
             for (k &&k--, j = suff[pos[i] - 1]; s[i + k] == s[j + k];
         k++) {}
+        preLcp();
     }
 
     void preLcp() {
@@ -54,3 +57,60 @@ struct SuffixArray {
         return min(table[i][len], table[j - (1 << len) + 1][len]);
     }
 };
+
+void solve() {
+    int n;
+    string s, t;
+    cin >> n >> s >> t;
+    reverse(s.begin(), s.end());
+    reverse(t.begin(), t.end());
+    vector<int> prefix(n + 2);
+
+    SuffixArray T(s);
+    vector<int> R(n + 1, n + 1), L(n + 1, -1);
+    for (int i = 1; i <= n; ++i)
+        prefix[i] = prefix[i - 1] + t[T.suff[i]] - '0';
+    stack<int> st;
+    for (int i = n; i; --i) {
+        while (!st.empty() and T.lcp[i] <= T.lcp[st.top()])
+            st.pop();
+        R[i] = (st.empty() ? n + 1 : st.top());
+        st.push(i);
+    }
+    while (!st.empty())st.pop();
+    for (int i = 1; i <= n; ++i) {
+        while (!st.empty() and T.lcp[i] <= T.lcp[st.top()])
+            st.pop();
+        L[i] = (st.empty() ? -1 : st.top());
+        st.push(i);
+    }
+
+    int answer = 0;
+    int idx = 0;
+    while (t[idx] == '1')++idx;
+    answer = n - idx;
+    for (int i = 0; i <= n; ++i) {
+        int len = R[i] - L[i];
+        int bad = (R[i] ? prefix[R[i] - 1] : 0);
+        bad -= (L[i] ? prefix[L[i] - 1] : 0);
+        answer = max(answer, (len - bad) * T.lcp[i]);
+    }
+    cout << answer << '\n';
+}
+
+signed main() {
+    ios_base::sync_with_stdio(false);
+    cin.tie(nullptr);
+#ifdef HALZOOM
+    freopen("Input.txt", "r", stdin);
+    freopen("Output.txt", "w", stdout);
+#endif
+
+    int test = 1;
+////    cin >> test;
+
+    for (int i = 1; i <= test; ++i) {
+        solve();
+    }
+    return 0;
+}

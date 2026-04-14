@@ -6,7 +6,6 @@ using namespace std;
 const int mod = 1e9 + 7, N = 2e6 + 6;
 struct Combinatorics {
     vector<int> fact, inv;
-    // 9
     Combinatorics(int n) {
         fact.assign(n + 1, 1);
         inv.assign(n + 1, 1);
@@ -16,7 +15,6 @@ struct Combinatorics {
         inv[n] = modInv(fact[n]);
         for (int i = n - 1; i >= 0; --i) inv[i] = (inv[i + 1] * (i + 1)) % mod;
     }
-    // 8
     int modInv(int n) { return exp(n, mod - 2); }
     int exp(int base, int pow) {
         if (pow < 0)return 0;
@@ -27,20 +25,21 @@ struct Combinatorics {
         }
         return res;
     }
-    // 4
     int nCr(int n, int r) {
+        if (r == 0) return 1;
         if (r < 0 or n < r) return 0;
         return fact[n] * inv[n - r] % mod * inv[r] % mod;
     }
-    // 4
     int nPr(int n, int r) {
         if (r < 0 or n < r) return 0;
         return fact[n] * inv[n - r] % mod;
     }
     int starsABars(int n, int m) { return nCr(n + m - 1, m); }
-    // 1, 1, 2, 5, 14, 42, 132 , 429
+    // 1, 1, 2, 5, 14, 42, 132 , 429 , 1430
     int Catalan(int n) { return modInv(n + 1) * nCr(2 * n, n) % mod; }
-    int invCatalan(int n) { return nCr(2 * n, n - 1); }
+    int Catalan(int n, int k) {
+        return (k + 1) * modInv(n + k + 1) % mod * nCr(2 * n + k, n) % mod;
+    }
 } comb(N);
 
 // nCr(n , r) when n and r are large integers and mod is small prime

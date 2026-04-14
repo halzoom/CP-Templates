@@ -4,82 +4,68 @@
 using namespace std;
 #define int long long
 
-struct Articulation {
-    vector<vector<int>> adj, tree, Components;
-    vector<int> low, vis, depth, is_art, id, done;
-    stack<pair<int, int>> st;
-    int n;
+struct ArticulationPoints {
+    int n, timer, sz;
+    vector<vector<int>> adj, tree, BCC;
+    vector<int> in, low, id, st, isArt;
 
-    Articulation(int n, vector<vector<int>> &adj) :
-            adj(adj), n(n),
-            low(n + 1, 0), vis(n + 1, 0), depth(n + 1, 0),
-            is_art(n + 1, 0), id(n + 1, 0), done(n + 1, 0) {
+    ArticulationPoints(int _n, const vector<vector<int>> &_adj) {
+        n = _n;
+        adj = _adj;
         build();
     }
 
-    void saturate(int u = -1, int v = -1) {
-        vector<int> comp;
-        while (!st.empty()) {
-            auto [x, y] = st.top();
-            st.pop();
-            if (!done[x]) done[x] = 1, comp.emplace_back(x);
-            if (!done[y]) done[y] = 1, comp.emplace_back(y);
-            if (x == u and y == v) break;
-        }
-        for (int x: comp) done[x] = 0;
-        Components.emplace_back(comp);
-    }
+    void build() {
+        in.assign(n + 1, {});
+        low.assign(n + 1, {});
+        id.assign(n + 1, {});
+        isArt.assign(n + 1, {});
+        timer = 1;
+        for (int i = 1; i <= n; i++)
+            if (!in[i]) dfs(i, -1);
 
-    void dfs(int u, int p) {
-        vis[u] = 1;
-        low[u] = depth[u];
-        int children = 0;
+        sz = BCC.size();
+        for (int i = 1; i <= n; i++)
+            if (isArt[i]) id[i] = ++sz;
 
-        for (auto v: adj[u]) {
-            if (v == p) continue;
-            if (!vis[v]) {
-                st.emplace(u, v);
-                children++;
-                depth[v] = depth[u] + 1;
-                dfs(v, u);
-                low[u] = min(low[u], low[v]);
-                if ((p and low[v] >= depth[u]) || (!p and children > 1))
-                    is_art[u] = 1;
-
-                if (low[v] >= depth[u])saturate(u, v);
-            } else if (vis[v] and depth[v] < depth[u]) {
-                st.emplace(u, v);
-                low[u] = min(low[u], depth[v]);
+        tree.assign(sz + 1, {});
+        for (int i = 0; i < BCC.size(); i++) {
+            int IDs = i + 1;
+            for (int u: BCC[i]) {
+                if (isArt[u]) {
+                    tree[IDs].push_back(id[u]);
+                    tree[id[u]].push_back(IDs);
+                } else
+                    id[u] = IDs;
             }
         }
     }
 
-    void build() {
-        for (int i = 1; i <= n; ++i) {
-            if (vis[i]) continue;
-            depth[i] = 1;
-            dfs(i, 0);
-            if (!st.empty())
-                saturate();
-        }
+    void dfs(int u, int p) {
+        in[u] = low[u] = ++timer;
+        st.emplace_back(u);
+        int children = 0;
 
-        int m = Components.size();
-        int nextId = m;
-        tree.assign(m + 1, {});
-
-        for (int u = 1; u <= m; ++u)
-            for (int v: Components[u - 1])
-                if (id[v] == 0) id[v] = u;
-
-        for (int u = 1; u <= m; ++u) {
-            for (int v: Components[u - 1]) {
-                if (!is_art[v]) continue;
-                if (id[v] <= m) {
-                    id[v] = ++nextId;
-                    if (tree.size() <= id[v]) tree.resize(id[v] + 1);
+        for (int v: adj[u]) {
+            if (v == p) continue;
+            if (in[v]) {
+                low[u] = min(low[u], in[v]);
+            } else {
+                children++;
+                dfs(v, u);
+                low[u] = min(low[u], low[v]);
+                if (low[v] >= in[u]) {
+                    isArt[u] = (p != -1 or children > 1);
+                    vector<int> component;
+                    while (true) {
+                        int node = st.back();
+                        st.pop_back();
+                        component.push_back(node);
+                        if (node == v) break;
+                    }
+                    component.push_back(u);
+                    BCC.push_back(component);
                 }
-                tree[u].emplace_back(id[v]);
-                tree[id[v]].emplace_back(u);
             }
         }
     }
@@ -144,7 +130,6 @@ struct LCA {
         int dcb = getDist(c, b);
         return dac + dcb == dab;
     }
-
 };
 
 void solve() {
@@ -157,17 +142,17 @@ void solve() {
         adj[v].emplace_back(u);
     }
 
-    Articulation T(n, adj);
+    ArticulationPoints T(n, adj);
     LCA lc(T.tree);
 
     while (q--) {
         int a, b, c;
         cin >> a >> b >> c;
-        if (a == c || b == c) {
+        if (a == c or b == c) {
             cout << "NO\n";
             continue;
         }
-        if (T.is_art[c] == 0) {
+        if (T.isArt[c] == 0) {
             cout << "YES\n";
             continue;
         }

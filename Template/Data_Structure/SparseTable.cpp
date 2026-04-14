@@ -1,35 +1,34 @@
-#include<bits/stdc++.h>
+#include <bits/stdc++.h>
 using namespace std;
-#define int long long
 
-template<typename T, class CMP = function < T(const T &, const T &)>>
-
-class SparseTable {
-public:
+template<class T>
+struct SparseTable {
+    // change mxLog
+    static const int mxLog = 21;
+    vector<array<T, mxLog>> table;
+    vector<int> lg;
     int n;
-    vector <vector<T>> sp;
-    CMP func;
 
-    SparseTable(const vector <T> &a, const CMP &f) : func(f) {
-        n = a.size();
-        int max_log = 32 - __builtin_clz(n);
-        sp.resize(max_log);
-        sp[0] = a;
-        for (int j = 1; j < max_log; ++j) {
-            sp[j].resize(n - (1 << j) + 1);
-            for (int i = 0; i + (1 << j) <= n; ++i) {
-                sp[j][i] = func(sp[j - 1][i], sp[j - 1][i + (1 << (j - 1))]);
-            }
-        }
+    SparseTable(int sz) {
+        n = sz;
+        table.resize(n + 1);
+        lg.resize(n + 1);
+        for (int i = 0; i <= n; ++i) lg[i] = __lg(i);
     }
 
-    T get(int l, int r) const {
-        int lg = __lg(r - l + 1);
-        return func(sp[lg][l], sp[lg][r - (1 << lg) + 1]);
+    void build(vector<T> &v) {
+        for (int i = 0; i < n; ++i) table[i][0] = v[i];
+        for (int j = 1; j < mxLog; ++j)
+            for (int i = 0; i + (1 << j) - 1 < n; ++i)
+                table[i][j] = merge(table[i][j - 1], table[i + (1 << (j - 1))][j - 1]);
+    }
+
+    T merge(T &l, T &r) {
+        return min(l, r);
+    }
+
+    T query(int l, int r) {
+        int j = lg[r - l + 1];
+        return merge(table[l][j], table[r - (1 << j) + 1][j]);
     }
 };
-/*
-  SparseTable sp(a, [](int a, int b) {
-    return max(a, b);
-  });
- */

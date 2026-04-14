@@ -86,4 +86,14 @@ struct LCA {
         int dcb = getDist(c, b);
         return dac + dcb == dab;
     }
+
+    int Kth_on_path(int u, int v, int k) { // 1 indexed
+        int w = getLCA(u, v);
+        int d1 = level[u] - level[w];
+        if (k - 1 <= d1)
+            return KthAnc(u, k - 1);
+        int rem = k - (d1 + 1);
+        int d2 = level[v] - level[w];
+        return KthAnc(v, d2 - rem);
+    }
 };

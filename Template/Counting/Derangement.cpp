@@ -1,4 +1,5 @@
 #include<bits/stdc++.h>
+
 using namespace std;
 #define int long long
 
@@ -7,6 +8,8 @@ using namespace std;
 vector<int> Derangement(int n) {
     vector<int> D(n + 1, 0);
     D[2] = 1;
-    for (int i = 3; i <= n; ++i) { D[i] = (i - 1) * (D[i - 1] + D[i - 2]) % mod; }
+    for (int i = 3; i <= n; ++i) {
+        D[i] = (i - 1) * (D[i - 1] + D[i - 2]) % mod;
+    }
     return D;
 }
