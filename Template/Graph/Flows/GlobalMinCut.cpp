@@ -6,6 +6,7 @@ const int inf = 1e18;
 // Stoer–Wagner global min‐cut on an undirected weighted graph.
 // n = number of vertices(0 indexed), weight[u][v] = weight of edge u–v (0 if none).
 // Returns the weight of the minimum cut separating the vertices into two nonempty sets.
+// O(N^3)
 int stoer_wagner(int n, vector<vector<int>> &weight) {
     vector<bool> alive(n, true);
     vector<int> best(n), dist(n);

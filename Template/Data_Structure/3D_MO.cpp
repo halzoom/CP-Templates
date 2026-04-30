@@ -1,120 +1,169 @@
-#include<bits/stdc++.h>
+#include <bits/stdc++.h>
+
 using namespace std;
 #define int long long
+const int inf = 1e18;
+struct Query {
+    int l, r, t, id;
+};
 
-const int N = 1e5 + 1, B = 4500, C = N / B + 1;
+struct Update {
+    int pos, old, newv;
+};
 
-struct DistinctCounter {
-    int cnt[N * 2];  // Frequency of each element
-    int distinct;    // Number of distinct elements
-    DistinctCounter() {
-        memset(cnt, 0, sizeof cnt);
-        distinct = 0;
+struct MoWithUpdates {
+    int n, answer = 0, B;
+    vector<int> a, res, cur, frq, frqOfrq, SQ;
+    vector<Query> queries;
+    vector<Update> updates;
+
+    MoWithUpdates(vector<int> &_a) {
+        n = _a.size();
+        a = _a;
+        B = pow(n, 2.0 / 3.0) + 1;
+        frq.assign(2 * n + 1, {});
+        frqOfrq.assign(n + 1, {});
+        SQ.assign(B + 1, {});
+        SQ[0] = 1;
+        frqOfrq[0] = inf;
+    }
+
+    void addUpdate(int pos, int val) {
+        updates.push_back({pos, 0, val});
+    }
+
+    void addQuery(int l, int r) {
+        queries.push_back({l, r, (int) updates.size(), (int) queries.size()});
     }
 
     void add(int x) {
-        // If x was not present, increment distinct count
-        if (cnt[x] == 0) distinct++;
-        cnt[x]++;
+        x = cur[x];
+        if (--frqOfrq[frq[x]] == 0)SQ[frq[x] / B]--;
+        frq[x]++;
+        if (++frqOfrq[frq[x]] == 1)SQ[frq[x] / B]++;
     }
 
-    void del(int x) {
-        cnt[x]--;
-        // If x is no longer present, decrement distinct count
-        if (cnt[x] == 0) distinct--;
+    void erase(int x) {
+        x = cur[x];
+        if (--frqOfrq[frq[x]] == 0)SQ[frq[x] / B]--;
+        frq[x]--;
+        if (++frqOfrq[frq[x]] == 1)SQ[frq[x] / B]++;
     }
 
     int get() {
-        // Return the number of distinct elements
-        return distinct;
+        int idx = 0;
+        while (SQ[idx] == B)++idx;
+        idx = idx * B;
+        while (frqOfrq[idx])++idx;
+        return idx;
     }
-} t[C * (C + 1) / 2 + 10], ds;
 
-int st[C], en[C], BC = 0;
-int a[N], I[N];
+    vector<int> Process() {
+        sort(queries.begin(), queries.end(), [&](const Query &a, const Query &b) {
+            int bl = a.l / B, bl2 = b.l / B;
+            if (bl != bl2) return bl < bl2;
+            int br = a.r / B, br2 = b.r / B;
+            if (br != br2) return (bl & 1) ? br > br2 : br < br2;
+            return (br & 1) ? a.t > b.t : a.t < b.t;
+        });
+        cur = a;
+        for (auto &u: updates) {
+            u.old = cur[u.pos];
+            cur[u.pos] = u.newv;
+        }
+        res.assign(queries.size(), 0);
+        cur = a;
+        int l = 1, r = 0, t = 0;
 
-int query(int l, int r) {
-    int L = l / B, R = r / B;
-    // Adjust R if the range doesn't fully cover the last block
-    if (r != en[R]) R--;
-    // Adjust L if the range doesn't fully cover the first block
-    if (l != st[L]) L++;
-    if (R < L) {
-        // If the range is within a single block, handle it directly
-        for (int i = l; i <= r; i++) ds.add(a[i]);
-        int ans = ds.get();
-        for (int i = l; i <= r; i++) ds.del(a[i]);
-        return ans;
+        auto apply = [&](int idx) {
+            int pos = updates[idx].pos;
+            int newV = updates[idx].newv;
+
+            if (l <= pos and pos <= r) {
+                erase(pos);
+                cur[pos] = newV;
+                add(pos);
+            } else {
+                cur[pos] = newV;
+            }
+        };
+
+        auto cancel = [&](int idx) {
+            int pos = updates[idx].pos;
+            int oldV = updates[idx].old;
+
+            if (l <= pos and pos <= r) {
+                erase(pos);
+                cur[pos] = oldV;
+                add(pos);
+            } else {
+                cur[pos] = oldV;
+            }
+        };
+
+        for (const auto &[lq, rq, tq, idx]: queries) {
+            while (t < tq) apply(t++);
+            while (t > tq) cancel(--t);
+
+            while (l > lq) add(--l);
+            while (r < rq) add(++r);
+            while (l < lq) erase(l++);
+            while (r > rq) erase(r--);
+            res[idx] = get();
+        }
+
+        return res;
     }
-    // Otherwise, use the precomputed distinct counts for the fully covered blocks
-    int id = I[L * BC + R];
-    // Add elements from the left partial block
-    for (int i = l; i < st[L]; i++) t[id].add(a[i]);
-    // Add elements from the right partial block
-    for (int i = en[R] + 1; i <= r; i++) t[id].add(a[i]);
-    int ans = t[id].get();
-    // Remove elements from the left partial block
-    for (int i = l; i < st[L]; i++) t[id].del(a[i]);
-    // Remove elements from the right partial block
-    for (int i = en[R] + 1; i <= r; i++) t[id].del(a[i]);
-    return ans;
-}
+};
 
-inline void upd(int id, int pos, int val) {
-    t[id].del(a[pos]);  // Remove the old value
-    t[id].add(val);     // Add the new value
-}
+void solve() {
+    int n, q;
+    cin >> n >> q;
+    vector<int> a(n + 1);
+    map<int, int> mp;
+    for (int i = 1; i <= n; ++i)
+        cin >> a[i], mp[a[i]];
 
-map<int, int> mp;
-int nxt = 0;
+    vector<array<int, 3>> Q(q);
+    for (int i = 0; i < q; ++i) {
+        for (int j = 0; j < 3; ++j)
+            cin >> Q[i][j];
 
-int get(int x) {  // Coordinate compression
-    return mp.count(x) ? mp[x] : mp[x] = ++nxt;
+        if (Q[i][0] == 2)
+            mp[Q[i][2]];
+    }
+
+    int id = 1;
+    for (auto &[_, v]: mp)
+        v = id++;
+    for (int i = 1; i <= n; ++i)
+        a[i] = mp[a[i]];
+
+    MoWithUpdates T(a);
+    for (auto [t, l, r]: Q) {
+        if (t == 1)
+            T.addQuery(l, r);
+        else
+            T.addUpdate(l, mp[r]);
+    }
+    auto answer = T.Process();
+    for (auto i: answer)
+        cout << i << '\n';
 }
 
 signed main() {
-    ios_base::sync_with_stdio(0);
-    cin.tie(0);
-    int n, q;
-    cin >> n >> q;
-    for (int i = 0; i < n; i++) {
-        cin >> a[i];
-        a[i] = get(a[i]);  // Compress coordinates
-    }
-    for (int i = 0; i < n; i++) {
-        if (i % B == 0) st[i / B] = i, BC++;              // Start of each block
-        if (i % B == B - 1 || i == n - 1) en[i / B] = i;  // End of each block
-    }
-    int nw = 0;
-    for (int i = 0; i < BC; i++) {
-        for (int j = i; j < BC; j++) {
-            int id = nw;
-            I[i * BC + j] = nw++;  // Map block range to ID
-            // Precompute distinct counts for block ranges
-            for (int p = st[i]; p <= en[j]; p++) t[id].add(a[p]);
-        }
-    }
-    while (q--) {
-        int ty;
-        cin >> ty;
-        if (ty == 2) {
-            int l, r;
-            cin >> l >> r;
-            --l;
-            --r;
-            cout << n - query(l, r) << '\n';  // Handle query
-        } else {
-            int pos, val;
-            cin >> pos >> val;
-            --pos;
-            val = get(val);  // Compress the new value
-            for (int i = 0; i < BC; i++) {
-                for (int j = i; j < BC; j++) {  // Update all relevant block ranges
-                    if (st[i] <= pos && pos <= en[j]) upd(I[i * BC + j], pos, val);
-                }
-            }
-            a[pos] = val;  // Update the array
-        }
+    ios_base::sync_with_stdio(false);
+    cin.tie(nullptr);
+#ifdef HALZOOM
+    freopen("Input.txt", "r", stdin);
+    freopen("Output.txt", "w", stdout);
+#endif
+
+    int test = 1;
+//    cin >> test;
+
+    for (int i = 1; i <= test; ++i) {
+        solve();
     }
     return 0;
 }

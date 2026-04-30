@@ -4,9 +4,8 @@ using namespace std;
 
 // count number of distinct colors in path
 const int N = 2e5 + 5, B = 360, LG = 25;
-int in[N], out[N], tree[2 * N], depth[N],
-        timer = 1;  // don't forget to reset timer in test cases
-vector <vector<int>> adj, ancestor;
+int in[N], out[N], tree[2 * N], depth[N], timer = 1;  // don't forget to reset timer in test cases
+vector<vector<int>> adj, ancestor;
 
 int KthAnc(int u, int k) {
     for (int i = 0; k; ++i, k >>= 1) {
@@ -92,7 +91,7 @@ struct MO_onTree {
         else erase(u);
     }
 
-    vector<int> Process(vector <Query> &query) {
+    vector<int> Process(vector<Query> &query) {
         sort(query.begin(), query.end(),
              [&](Query &a, Query &b) { return a.toPair() < b.toPair(); });
         vector<int> ret(query.size());
@@ -129,7 +128,7 @@ void solve() {
     }
     timer = 1;
     tour(1, 0);
-    vector <Query> query;
+    vector<Query> query;
     for (int i = 0, a, b; i < q; ++i) {
         cin >> a >> b;
         query.emplace_back(a, b, i);

@@ -83,7 +83,7 @@ struct Dinic {
         return 0;
     }
 
-    vector<array<int, 2>> getEdges() {
+    vector<array<int, 2>> getEdges() { // min cut edges
         vector<int> srcSide(n + 1);
         queue<int> q;
         q.push(s), srcSide[s] = 1;

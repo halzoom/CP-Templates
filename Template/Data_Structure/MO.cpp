@@ -1,46 +1,14 @@
 #include<bits/stdc++.h>
+
 using namespace std;
 #define int long long
+const int N = 1 << 20;
+int block = 460;
 
-struct MO {
-    vector<int> v, frq;
-    int B = 0, n, ans = 0;
-
-    MO(vector<int> &a) {
-        v = a;
-        n = (int) a.size();
-        B = sqrt(n) + 1;
-        frq.assign(n + 1, {});
-    }
-
-    void add(int idx) {}
-
-    void erase(int idx) {}
-
-    vector<int> done(vector <array<int, 3>> &query) {
-        sort(query.begin(), query.end(), [&](array<int, 3> a, array<int, 3> b) {
-            return make_pair(a[0] / B, a[1]) < make_pair(b[0] / B, b[1]);
-        });
-        vector<int> ret(query.size());
-        int l = query[0][0], r = l;
-        add(l);
-        for (const auto [lq, rq, idx]: query) {
-            while (lq < l) --l, add(l);
-            while (rq > r) ++r, add(r);
-            while (lq > l) erase(l), ++l;
-            while (rq < r) erase(r), --r;
-            ret[idx] = ans;
-        }
-        return ret;
-    }
-};
-
-// Mo optimizations
-int block = 0;
-
-// 1
 struct Query {
     int l, r, idx;
+
+    Query() {};
 
     Query(int L, int R, int i) { l = L, r = R, idx = i; }
 
@@ -49,29 +17,77 @@ struct Query {
     }
 };
 
-// 2
-inline int64_t hilbertOrder(int x, int y, int pow, int rotate) {
-    if (pow == 0) { return 0; }
-    int hpow = 1 << (pow - 1);
-    int seg = (x < hpow) ? ((y < hpow) ? 0 : 3) : ((y < hpow) ? 1 : 2);
-    seg = (seg + rotate) & 3;
-    const int rotateDelta[4] = {3, 0, 0, 1};
-    int nx = x & (x ^ hpow), ny = y & (y ^ hpow);
-    int nrot = (rotate + rotateDelta[seg]) & 3;
-    int64_t subSquareSize = int64_t(1) << (2 * pow - 2);
-    int64_t ans = seg * subSquareSize;
-    int64_t add = hilbertOrder(nx, ny, pow - 1, nrot);
-    ans += (seg == 1 || seg == 2) ? add : (subSquareSize - add - 1);
-    return ans;
-}
+struct MO {
+    vector<int> v, frq;
+    int n, answer = 0;
 
-struct Query {
-    int l, r, idx;
-    int64_t ord;  // Hilbert order value
-    Query(int ll, int rr, int iidx) {
-        l = ll, r = rr, idx = iidx;
-        ord = hilbertOrder(l, r, 21, 0);
+    MO(vector<int> &a) {
+        v = a;
+        n = a.size();
+        frq.assign(N, {});
+    }
+
+    void add(int idx) {
+        if (++frq[v[idx]] == 1)answer++;
+    }
+
+    void erase(int idx) {
+        if (--frq[v[idx]] == 0)answer--;
+    }
+
+    vector<int> go(vector<Query> &query) {
+        sort(query.begin(), query.end(), [&](Query a, Query b) {
+            return make_pair(a.l / block, a.r) < make_pair(b.l / block, b.r);
+        });
+        vector<int> ret(query.size());
+        int l = query[0].l, r = l;
+        add(l);
+        for (const auto [lq, rq, idx]: query) {
+            while (lq < l) --l, add(l);
+            while (rq > r) ++r, add(r);
+            while (lq > l) erase(l), ++l;
+            while (rq < r) erase(r), --r;
+            ret[idx] = answer;
+        }
+        return ret;
     }
 };
 
-bool operator<(const Query &a, const Query &b) { return a.ord < b.ord; }
+void solve() {
+    int n;
+    cin >> n;
+    vector<int> a(n + 1);
+    for (int i = 1; i <= n; ++i)
+        cin >> a[i];
+
+    int q;
+    cin >> q;
+    vector<Query> Q(q);
+    for (int i = 0, l, r; i < q; ++i) {
+        cin >> l >> r;
+        Q[i] = {l, r, i};
+    }
+
+    MO T(a);
+    auto answer = T.go(Q);
+    for (auto i: answer)
+        cout << i << '\n';
+}
+
+signed main() {
+    ios_base::sync_with_stdio(false);
+    cin.tie(nullptr);
+#ifdef HALZOOM
+    freopen("Input.txt", "r", stdin);
+    freopen("Output.txt", "w", stdout);
+#endif
+
+    int test = 1;
+//    cin >> test;
+
+    for (int i = 1; i <= test; ++i) {
+        solve();
+    }
+    return 0;
+}
+
