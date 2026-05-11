@@ -1,4 +1,5 @@
 #include<bits/stdc++.h>
+
 using namespace std;
 #define int long long
 
@@ -43,6 +44,9 @@ bool is_primitive_root(int g, int n, int phi_n, const vector<int> &factors) {
     return true;
 }
 
+// A primitive root modulo n is a number whose powers generate all numbers coprime to n modulo n.
+// g^k = p % n  => k from 1 to n - 1
+// ord(g)=φ(n)
 vector<int> get_primitive_roots(int n) {
     // any prime number has phi(n - 1) primitive root
     vector<int> roots;

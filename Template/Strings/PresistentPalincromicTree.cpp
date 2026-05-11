@@ -3,7 +3,6 @@
 using namespace std;
 #define int long long
 const int N = 1e7 + 1e6 + 5;
-using namespace std;
 
 template<int sigma = 26, char mch = 'a'>
 struct eertree {
