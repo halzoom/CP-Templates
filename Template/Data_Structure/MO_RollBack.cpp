@@ -68,7 +68,7 @@ struct MO_RollBack {
     }
 };
 
-int main() {
+signed main() {
     int n, m, q;
     cin >> n >> m >> q;
     vector<int> a(n);

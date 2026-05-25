@@ -72,7 +72,6 @@ struct AhoCorasick {
 struct DynamicAhoCorasick {
     vector<pair<AhoCorasick, vector<string>>> T;
 
-
     void insert(string &s) {
         vector<string> cur = {s};
         while (!T.empty() and cur.size() == T.back().second.size()) {
@@ -81,7 +80,6 @@ struct DynamicAhoCorasick {
 
             T.pop_back();
         }
-
         AhoCorasick aho(26, 'a');
         for (auto &t: cur)
             aho.insert(t);

@@ -12,6 +12,7 @@ using namespace std;
  * 3. \phi (n)= p1^(k1-1)*(p1 - 1) * p2^(k2-1)*(p2 - 1) * p3^(k3-1)*(p3 - 1)
  * ......
  * 4. \sum (d|n) \phi (d) = n
+ * 5. phi(n) = n *  ((pi - 1) / pi) -> where pi is all prime in n
  */
 vector<int> compute_phi(int n) {
     // \sum (d|n) \phi (d) = n
