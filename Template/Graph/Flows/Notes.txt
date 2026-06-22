@@ -1,0 +1,10 @@
+1.The minimum vertex cover in a graph is a set of vertices such that
+  every edge has at least one endpoint in the set.
+
+2. The maximum independent  is a set of vertices such that no two
+   chosen vertices are connected by an edge.
+
+3. The maximum independent equal to the number of vertices - the minimum vertex cover
+
+4. A global minimum cut of an undirected graph is the smallest number (or total weight)
+   of edges whose removal disconnects the graph.

@@ -17,6 +17,13 @@ int extended_gcd(int a, int b, int &x, int &y) {
     y = x1;
     return g;
 }
+int mod_inv(int a, int mod) {
+    int x, y;
+    extended_gcd(a, mod, x, y);
+    x %= mod;
+    if (x < 0)x += mod;
+    return x;
+}
 
 bool find_any_solution(int a, int b, int c, int &x0, int &y0, int &g) {
     g = extended_gcd(abs(a), abs(b), x0, y0);
@@ -68,7 +75,7 @@ int find_all_solutions(int a, int b, int c, int minx, int maxx, int miny, int ma
     return (rx - lx) / abs(b) + 1;
 }
 
-bool findFastMinSumSolution(int a, int b, int c, int &minX, int &minY) {
+bool findMinSumSolution(int a, int b, int c, int &minX, int &minY) {
     int x0, y0, g;
     if (!find_any_solution(a, b, c, x0, y0, g))
         return false;

@@ -5,7 +5,7 @@ using namespace std;
 const int inf = 1e18;
 
 struct Node {
-    int sum = 0, min_val = inf;
+    int sum = 0, min_val = inf , max_val = -inf;
 
     Node() {};
 
@@ -48,13 +48,40 @@ private:
         return Merge(Left, Right);
     }
 
+    // Leftmost element in [Lx, Rx] <= v
     Node nxtSmaller(int l, int r, int node, int Lx, int Rx, int v) {
         if (l > Rx or r < Lx or Seg[node].min_val > v) return difVal;
-        if (l == r)
-            return Seg[node];
+        if (l == r) return Seg[node];
         Node left = nxtSmaller(l, mid, Lidx, Lx, Rx, v);
-        if (left.min_val != inf)return left;
+        if (left.min_val != inf) return left;
         return nxtSmaller(mid + 1, r, Ridx, Lx, Rx, v);
+    }
+
+    // Rightmost element in [Lx, Rx] <= v
+    Node prvSmaller(int l, int r, int node, int Lx, int Rx, int v) {
+        if (l > Rx or r < Lx or Seg[node].min_val > v) return difVal;
+        if (l == r) return Seg[node];
+        Node right = prvSmaller(mid + 1, r, Ridx, Lx, Rx, v);
+        if (right.min_val != inf) return right;
+        return prvSmaller(l, mid, Lidx, Lx, Rx, v);
+    }
+
+    // Leftmost element in [Lx, Rx] >= v
+    Node nxtGreater(int l, int r, int node, int Lx, int Rx, int v) {
+        if (l > Rx or r < Lx or Seg[node].max_val < v) return difVal;
+        if (l == r) return Seg[node];
+        Node left = nxtGreater(l, mid, Lidx, Lx, Rx, v);
+        if (left.max_val != -inf) return left;
+        return nxtGreater(mid + 1, r, Ridx, Lx, Rx, v);
+    }
+
+    // Rightmost element in [Lx, Rx] >= v
+    Node prvGreater(int l, int r, int node, int Lx, int Rx, int v) {
+        if (l > Rx or r < Lx or Seg[node].max_val < v) return difVal;
+        if (l == r) return Seg[node];
+        Node right = prvGreater(mid + 1, r, Ridx, Lx, Rx, v);
+        if (right.max_val != -inf) return right;
+        return prvGreater(l, mid, Lidx, Lx, Rx, v);
     }
 
 public:

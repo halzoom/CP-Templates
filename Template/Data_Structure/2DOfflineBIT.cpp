@@ -16,15 +16,18 @@ struct BIT2D {
 
     // n: the limit of the first dimension
     // todo: all update operations you will make
-    BIT2D(int n, vector<array<int, 2>> &todo) : n(n + 1), vals(n + 1), bit(n + 1) {
+    BIT2D(int _n, vector<array<int, 2>> &todo) {
+        n = _n;
+        vals.assign(n, {-inf});
+        bit.resize(n);
         sort(begin(todo), end(todo), [](auto &a, auto &b) { return a[1] < b[1]; });
 
-        for (int i = 0; i < n; i++) vals[i].push_back(-inf);
         for (auto [r, c]: todo)
             for (; r < n; r |= r + 1)
                 if (vals[r].back() != c) vals[r].push_back(c);
 
-        for (int i = 0; i < n; i++) bit[i].resize(vals[i].size());
+        for (int i = 0; i < n; i++)
+            bit[i].assign(vals[i].size(), 0);
     }
 
     void add(int r, int c, T val) {
