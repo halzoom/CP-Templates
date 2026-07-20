@@ -38,6 +38,8 @@ struct KRT {
     vector<array<array<int, 2>, B>> T;
     vector<int> p, d, in, lg;
 
+    KRT() {};
+
     KRT(int n, int m) : n(n + m + 2), nodes(n), p(n + m + 2), adj(n + m + 2) {
         iota(p.begin(), p.end(), 0);
     }
@@ -58,14 +60,17 @@ struct KRT {
         d.resize(n), in.resize(n);
         for (int u = 1; u < n; ++u)
             if (u == p[u]) dfs(u);
-
-        tour.reserve(n *= 2);
-        T.resize(n), lg.resize(n);
-        for (int i = 0; i < n; ++i) lg[i] = __lg(i), T[i][0] = tour[i];
+        int sz = tour.size();
+        T.resize(sz);
+        lg.resize(sz + 1);
+        lg[0] = 0;
+        for (int i = 1; i <= sz; ++i) lg[i] = __lg(i);
+        for (int i = 0; i < sz; ++i) T[i][0] = tour[i];
         for (int j = 1; j < B; ++j)
-            for (int i = 0; i + (1 << j) - 1 < n; ++i)
+            for (int i = 0; i + (1 << j) - 1 < sz; ++i)
                 T[i][j] = min(T[i][j - 1], T[i + (1 << (j - 1))][j - 1]);
     }
+
 
     void dfs(int u) {
         in[u] = size(tour);
@@ -86,7 +91,7 @@ struct KRT {
         int lc = lca(u, v);
         return lc > nodes ? edg[lc - nodes - 1][2] : 0;
     }
-};
+} ;
 
 void solve() {
     int n, m, q;

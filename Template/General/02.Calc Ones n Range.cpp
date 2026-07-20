@@ -1,14 +1,36 @@
 #include<bits/stdc++.h>
+
 using namespace std;
 #define int long long
 
 // 11
-ll calc_ones(ll a, ll bit) {
+int calc_ones(int a, int bit) {
     ++bit;
-    ll ones = a / (1ll << bit) * (1ll << (bit - 1));
+    int ones = a / (1ll << bit) * (1ll << (bit - 1));
     if (a % (1ll << bit) >= (1ll << (bit - 1)))
         ones += a % (1ll << bit) - (1ll << (bit - 1)) + 1;
     return ones;
+}
+
+int get(int n, int m) { // submasks of m less than n
+    if (n < 0)return 0;
+    int answer = 0;
+    for (int bit = 30; bit >= 0; --bit) {
+        int nBit = n >> bit & 1;
+        int mBit = m >> bit & 1;
+        if (nBit == 0)
+            continue;
+        int all = (1ll << bit) - 1;
+        int cnt = __builtin_popcount(m & all);
+        if (mBit == 1) {
+            answer += 1 << cnt;
+        } else {
+            answer += 1 << cnt;
+            return answer;
+        }
+    }
+    answer++;
+    return answer;
 }
 // calc how many bit number (bit) appear in range (1, a)
 // if you want range [l, r]  = calc_ones(r, bit_number) - calc(l - 1,
