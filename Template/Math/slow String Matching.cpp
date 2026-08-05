@@ -59,6 +59,34 @@ vector<int> multiply(const vector<int> &a, const vector<int> &b) {
     return result;
 }
 
+
+vector<int> mismatchByShift(const string &a, const string &b) {
+    int n = a.size();
+
+    vector<int> matches(n);
+
+    for (char c = 'a'; c <= 'z'; ++c) {
+        vector<int> x(n);
+        vector<int> y(2 * n);
+
+        for (int i = 0; i < n; ++i) {
+            x[n - 1 - i] = (a[i] == c);
+            y[i] = y[i + n] = (b[i] == c);
+        }
+
+        vector<int> convolution = multiply(x, y);
+
+        for (int shift = 0; shift < n; ++shift)
+            matches[shift] += convolution[n - 1 + shift];
+    }
+
+    vector<int> mismatch(n);
+
+    for (int shift = 0; shift < n; ++shift)
+        mismatch[shift] = n - matches[shift];
+
+    return mismatch;
+}
 void solve() {
     string s, t;
     cin >> s >> t;

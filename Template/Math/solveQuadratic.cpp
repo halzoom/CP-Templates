@@ -2,7 +2,7 @@
 using namespace std;
 #define int long long
 
-#define double long double  // ************
+#define double long double
 const double EPS = 1e-9;
 
 pair <complex<double>, complex<double>> solveQuadratic(double a, double b, double c) {

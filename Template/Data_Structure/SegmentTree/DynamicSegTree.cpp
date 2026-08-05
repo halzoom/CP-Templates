@@ -19,8 +19,6 @@ struct Node {
 };
 
 struct DynamicSagara {
-
-
     vector<Node> tree;
     const int n;
 

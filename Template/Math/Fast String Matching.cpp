@@ -1,4 +1,5 @@
 #include<bits/stdc++.h>
+
 using namespace std;
 #define int long long
 
@@ -7,7 +8,7 @@ using cd = complex<double>;
 // pass
 const double PI = acos(-1), eps = 5e-4;
 
-void fft(vector <cd> &a, bool invert) {
+void fft(vector<cd> &a, bool invert) {
     int n = a.size();
     for (int i = 1, j = 0; i < n; i++) {
         int bit = n >> 1;
@@ -33,48 +34,25 @@ void fft(vector <cd> &a, bool invert) {
     }
 }
 
-vector <cd> multiply(vector < cd >
-const& a,
-vector <cd> const &b
-) {
-vector <cd> fa(a.begin(), a.end()), fb(b.begin(), b.end());
-int n = 1;
-while (
-
-n<(int)
-
-a.
-
-size()
-
-+ (int)b.
-
-size()
-
-) n <<= 1;
-fa.
-resize(n);
-fb.
-resize(n);
-fft(fa,
-false);
-fft(fb,
-false);
-for (
-int i = 0;
-i<n;
-i++) fa[i] *= fb[i];
-fft(fa,
-true);
-return
-fa;
+vector<cd> multiply(vector<cd> const &a, vector<cd> const &b) {
+    vector<cd> fa(a.begin(), a.end()), fb(b.begin(), b.end());
+    int n = 1;
+    while (n < (int) a.size() + (int) b.size())n <<= 1;
+    fa.resize(n);
+    fb.resize(n);
+    fft(fa,false);
+    fft(fb,false);
+    for (int i = 0;i < n;i++)
+        fa[i] *= fb[i];
+    fft(fa,true);
+    return fa;
 }
 
 void solve() {
     string s, patt;
     cin >> s >> patt;
     int n = (int) s.length(), m = (int) patt.length();
-    vector <cd> poly1(n), poly2(m);
+    vector<cd> poly1(n), poly2(m);
     for (int i = 0; i < n; ++i) {
         double angle = 2 * PI * (s[i] - 'a') / 26;
         poly1[i] = cd(cos(angle), sin(angle));
@@ -86,7 +64,7 @@ void solve() {
             poly2[i] = cd(cos(angle), -sin(angle));
         }
     }
-    vector <cd> ans = multiply(poly1, poly2);
+    vector<cd> ans = multiply(poly1, poly2);
     int wild_cnt = (int) count(patt.begin(), patt.end(), '*');
     int tot = 0;
     vector<int> pos;

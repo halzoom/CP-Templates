@@ -4,8 +4,10 @@ using namespace std;
 #define int long long
 
 const int mod = 1e9 + 7, N = 2e6 + 6;
+
 struct Combinatorics {
     vector<int> fact, inv;
+
     Combinatorics(int n) {
         fact.assign(n + 1, 1);
         inv.assign(n + 1, 1);
@@ -15,7 +17,9 @@ struct Combinatorics {
         inv[n] = modInv(fact[n]);
         for (int i = n - 1; i >= 0; --i) inv[i] = (inv[i + 1] * (i + 1)) % mod;
     }
+
     int modInv(int n) { return exp(n, mod - 2); }
+
     int exp(int base, int pow) {
         if (pow < 0)return 0;
         int res = 1;
@@ -25,18 +29,22 @@ struct Combinatorics {
         }
         return res;
     }
+
     int nCr(int n, int r) {
         if (r == 0) return 1;
         if (r < 0 or n < r) return 0;
         return fact[n] * inv[n - r] % mod * inv[r] % mod;
     }
+
     int nPr(int n, int r) {
         if (r < 0 or n < r) return 0;
         return fact[n] * inv[n - r] % mod;
     }
-    int starsABars(int n, int m) { return nCr(n + m - 1, m); }
+
+    int starsABars(int n, int m) { return nCr(n + m - 1, n); }
     // 1, 1, 2, 5, 14, 42, 132 , 429 , 1430
     int Catalan(int n) { return modInv(n + 1) * nCr(2 * n, n) % mod; }
+
     int Catalan(int n, int k) {
         return (k + 1) * modInv(n + k + 1) % mod * nCr(2 * n + k, n) % mod;
     }
@@ -53,19 +61,18 @@ int lucas(int n, int r) {
     return answer;
 }
 
-// 5
 //  nCr is odd if r is a submask of n
 int nCr_Parity(int n, int r) {
     if (n < r) return 0;
     return (n & r) == r;
 }
-// 5
+
 int C(int n, int k) {
     long double res = 1;
     for (int i = 1; i <= k; ++i) res = res * (n - k + i) / i;
     return (int) (res + 0.01);
 }
-// 14
+
 vector<vector<int>> Pascal(int n) {
     vector<vector<int>> C(n + 1, vector<int>(n + 1));
     C[0][0] = 1;
