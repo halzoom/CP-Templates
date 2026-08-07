@@ -1,9 +1,10 @@
 #include <bits/stdc++.h>
 
 using namespace std;
-const int N = 1e5 + 5, mod = 998244353;
-int dp[N], sumDp[N], frq[N], pw[N];
+const int N = 1e6 + 5, mod = 998244353;
+int dp[N], frq[N], pw[N], chg[N];
 vector<int> Div[N];
+vector<pair<int, int>> trans[N];
 
 int exp(int base, int pow) {
     if (pow < 0)return 0;
@@ -15,13 +16,35 @@ int exp(int base, int pow) {
     return res;
 }
 
+void update(int m, int op) {
+    for (auto d: Div[m]) {
+        if (op == 1) {
+            chg[d] = pw[frq[d]];
+            frq[d]++;
+        } else {
+            frq[d]--;
+            chg[d] = mod - pw[frq[d]];
+        }
+    }
+
+    for (auto [d, nd]: trans[m]) {
+        chg[d] -= chg[nd];
+        if (chg[d] < 0)chg[d] += mod;
+    }
+
+    for (auto d: Div[m]) {
+        dp[d] += chg[d];
+        if (dp[d] >= mod)dp[d] -= mod;
+    }
+}
+
 void solve() {
     int n;
     cin >> n;
     vector<int> a(n + 1);
     pw[0] = 1;
     for (int i = 1; i <= n; ++i)
-        cin >> a[i], frq[a[i]]++, pw[i] = pw[i - 1] * 2 % mod;
+        cin >> a[i], frq[a[i]]++, pw[i] = pw[i - 1] * 2ll % mod;
 
     for (int i = 1; i < N; ++i)
         for (int j = 2 * i; j < N; j += i)
@@ -29,29 +52,12 @@ void solve() {
 
     for (int i = N - 1; i; --i) {
         dp[i] = pw[frq[i]] - 1;
+        if (dp[i] < 0)dp[i] += mod;
         for (int j = 2 * i; j < N; j += i) {
             dp[i] -= dp[j];
-            sumDp[i] += dp[j];
             if (dp[i] < 0)dp[i] += mod;
-            if (sumDp[i] >= mod)sumDp[i] -= mod;
         }
     }
-
-    auto update = [&](int m, int op = 1) {
-        for (auto d: Div[m]) {
-            frq[d] += op;
-            int old = dp[d];
-            dp[d] = pw[frq[d]] - 1 - sumDp[d];
-            if (dp[d] < 0)dp[d] += mod;
-
-            for (auto div: Div[d]) {
-                if (div == d)continue;
-                sumDp[div] += dp[d] - old;
-                if (sumDp[div] < 0)sumDp[div] += mod;
-                if (sumDp[div] >= mod)sumDp[div] -= mod;
-            }
-        }
-    };
 
     int total = exp(pw[n] - 1, mod - 2);
     int q;
@@ -79,16 +85,24 @@ signed main() {
     freopen("Output.txt", "w", stdout);
 #endif
 
-    for (int i = 1; i < N; ++i) {
+    for (int i = 1; i < N; ++i)
         for (int j = i; j < N; j += i)
             Div[j].emplace_back(i);
-        reverse(Div[i].begin(), Div[i].end());
+
+    for (int m = 1; m < N; ++m) {
+        for (auto p: Div[m]) {
+            if (Div[p].size() != 2)continue;
+            for (auto d: Div[m]) {
+                if (m / d % p)continue;
+                trans[m].emplace_back(d, d * p);
+            }
+        }
     }
+
     int test = 1;
 //    cin >> test;
 
-    for (int i = 1; i <= test; ++i) {
+    for (int i = 1; i <= test; ++i)
         solve();
-    }
     return 0;
 }

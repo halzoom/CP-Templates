@@ -33,7 +33,7 @@ A collection of algorithms and data structures for competitive programming.
 - [DSU with Rollback](Data_Structure/DSU_RollBack.cpp)
 - [Dynamic Connectivity](Data_Structure/Dynamic_Connectivity.cpp)
 - [Dynamic Merge Sort Tree](Data_Structure/dynamic_merge_sort_tree.cpp)
-- [Hash Treap](Data_Structure/Hash_Treap.cpp)
+- [Hash Treap](Data_Structure/Hash_Treap_2.0.cpp)
 - [Lazy Segment Tree](Data_Structure/SegmentTree/LazySegmentTree.cpp)
 - [MO's Algorithm](Data_Structure/MO.cpp)
 - [MO's Algorithm with Rollback](Data_Structure/MO_RollBack.cpp)

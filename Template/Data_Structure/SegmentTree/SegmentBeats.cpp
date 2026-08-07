@@ -2,338 +2,497 @@
 
 using namespace std;
 #define int long long
-const int oo = 1e18;
+const int INF = (1LL << 62);
 
-int gcd(int a, int b) {
-    a = abs(a);
-    b = abs(b);
-    while (a) {
-        b %= a;
-        swap(a, b);
-    }
-    return b;
-}
-
+// All ranges are 0-indexed and half-open [l,r).
 struct Node {
-    int mn;
-    int mnCnt;
-    int secondMn;
+    int len = 0, sum = 0;
+    int mn = INF, mn2 = INF, mnCnt = 0;
+    int mx = -INF, mx2 = -INF, mxCnt = 0;
+    int midGcd = 0;
+    int lazyAdd = 0, lazySet = 0;
+    bool hasSet = false;
 
-    int mx;
-    int mxCnt;
-    int secondMx;
+    Node() = default;
 
-    int sum;
-    int diffGcd;
-
-    int lazyAdd;
-    int lazyEqual;
-    bool isLazyEqual;
-
-    Node() {
-        mx = -oo;
-        secondMx = -oo;
-        mxCnt = 0;
-
-        mn = oo;
-        secondMn = oo;
-        mnCnt = 0;
-
-        sum = 0;
-        diffGcd = 0;
-
-        lazyAdd = 0;
-        lazyEqual = 0;
-        isLazyEqual = 0;
-    };
-    Node(int x) {
-        mx = x;
-        secondMx = -oo;
-        mxCnt = 1;
-
-        mn = x;
-        secondMn = oo;
-        mnCnt = 1;
-
-        sum = x;
-        diffGcd = 0;
-
-        lazyAdd = 0;
-        lazyEqual = 0;
-        isLazyEqual = 0;
-    }
+    Node(int x) : len(1), sum(x), mn(x), mnCnt(1), mx(x), mxCnt(1) {}
 };
 
 struct SegTree {
-    int tree_size;
-    vector<Node> seg_data;
-    SegTree(int n) {
-        tree_size = 1;
-        while (tree_size < n) tree_size *= 2;
-        seg_data.resize(2 * tree_size, Node());
-    }
+    int n = 0, tree_size = 1;
+    vector<Node> seg;
 
-    Node merge(Node & lf, Node & ri) {
-        Node ans = Node();
+    SegTree() = default;
 
-        ans.sum = lf.sum + ri.sum;
+    SegTree(int n, int x = 0) { init(n, x); }
 
-        ans.mx = max(lf.mx, ri.mx);
-        ans.secondMx = max(lf.secondMx, ri.secondMx);
-        ans.mxCnt = 0;
-        if (lf.mx == ans.mx) ans.mxCnt += lf.mxCnt;
-        else ans.secondMx = max(ans.secondMx, lf.mx);
-        if (ri.mx == ans.mx) ans.mxCnt += ri.mxCnt;
-        else ans.secondMx = max(ans.secondMx, ri.mx);
+    SegTree(const vector<int> &a) { build(a); }
 
-        ans.mn = min(lf.mn, ri.mn);
-        ans.secondMn = min(lf.secondMn, ri.secondMn);
-        ans.mnCnt = 0;
-        if (lf.mn == ans.mn) ans.mnCnt += lf.mnCnt;
-        else ans.secondMn = min(ans.secondMn, lf.mn);
-        if (ri.mn == ans.mn) ans.mnCnt += ri.mnCnt;
-        else ans.secondMn = min(ans.secondMn, ri.mn);
+    int G(int a, int b) { return std::gcd(a, b); }
 
-        ans.diffGcd = gcd(lf.diffGcd, ri.diffGcd);
+    Node merge(const Node &a, const Node &b) {
+        if (!a.len) {
+            Node c = b;
+            c.lazyAdd = c.lazySet = 0;
+            c.hasSet = false;
+            return c;
+        }
+        if (!b.len) {
+            Node c = a;
+            c.lazyAdd = c.lazySet = 0;
+            c.hasSet = false;
+            return c;
+        }
 
-        int anyLeft = lf.secondMx;
-        int anyRight = ri.secondMx;
-        if (anyLeft != -oo && anyLeft != lf.mn && anyRight != -oo && anyRight != ri.mn)
-            ans.diffGcd = gcd(ans.diffGcd, anyLeft - anyRight);
+        Node c;
+        c.len = a.len + b.len;
+        c.sum = a.sum + b.sum;
 
-        int any = -1;
-        if (anyLeft != -oo && anyLeft != lf.mn) any = anyLeft;
-        else if (anyRight != -oo && anyRight != ri.mn) any = anyRight;
+        c.mx = max(a.mx, b.mx);
+        c.mxCnt = (a.mx == c.mx ? a.mxCnt : 0) + (b.mx == c.mx ? b.mxCnt : 0);
+        c.mx2 = max(a.mx == c.mx ? a.mx2 : a.mx, b.mx == c.mx ? b.mx2 : b.mx);
 
-        for (int val : {lf.mn, lf.mx, ri.mn, ri.mx}) {
-            if (val != ans.mn && val != ans.mx) {
-                if (any != -1)
-                    ans.diffGcd = gcd(ans.diffGcd, val - any);
-                else
-                    any = val;
+        c.mn = min(a.mn, b.mn);
+        c.mnCnt = (a.mn == c.mn ? a.mnCnt : 0) + (b.mn == c.mn ? b.mnCnt : 0);
+        c.mn2 = min(a.mn == c.mn ? a.mn2 : a.mn, b.mn == c.mn ? b.mn2 : b.mn);
+
+        bool hasRep = false;
+        int rep = 0;
+
+        auto addVal = [&](int x) {
+            if (x <= c.mn || x >= c.mx)return;
+            if (!hasRep)rep = x, hasRep = true;
+            else c.midGcd = G(c.midGcd, x - rep);
+        };
+
+        auto addChild = [&](const Node &x) {
+            if (x.mn2 < x.mx) {
+                int r = x.mn2;
+                if (!hasRep)rep = r, hasRep = true;
+                else c.midGcd = G(c.midGcd, r - rep);
+                c.midGcd = G(c.midGcd, x.midGcd);
             }
-        }
+            addVal(x.mn);
+            if (x.mx != x.mn)addVal(x.mx);
+        };
 
-        return ans;
+        addChild(a);
+        addChild(b);
+        return c;
     }
 
-    void init(vector<int> & nums, int ni, int lx, int rx) {
-        if(rx - lx == 1) {
-            if(lx < nums.size())
-                seg_data[ni] = Node(nums[lx]);
+    void pull(int ni) {
+        seg[ni] = merge(seg[2 * ni + 1], seg[2 * ni + 2]);
+    }
+
+    // Initializes n equal values in O(n).
+    void init(int _n, int x = 0) {
+        n = _n;
+        tree_size = 1;
+        while (tree_size < max<int>(1, n))tree_size <<= 1;
+        seg.assign(2 * tree_size - 1, Node());
+        for (int i = 0; i < n; ++i)seg[tree_size - 1 + i] = Node(x);
+        for (int i = tree_size - 2; i >= 0; --i)pull(i);
+    }
+
+    // Builds from an array in O(n).
+    void build(const vector<int> &a) {
+        n = a.size();
+        tree_size = 1;
+        while (tree_size < max<int>(1, n))tree_size <<= 1;
+        seg.assign(2 * tree_size - 1, Node());
+        for (int i = 0; i < n; ++i)seg[tree_size - 1 + i] = Node(a[i]);
+        for (int i = tree_size - 2; i >= 0; --i)pull(i);
+    }
+
+    void applySet(int ni, int x) {
+        auto &t = seg[ni];
+        if (!t.len)return;
+
+        t.sum = x * t.len;
+
+        t.mn = t.mx = x;
+        t.mn2 = INF;
+        t.mx2 = -INF;
+        t.mnCnt = t.mxCnt = t.len;
+
+        t.midGcd = 0;
+
+        t.lazySet = x;
+        t.hasSet = true;
+        t.lazyAdd = 0;
+    }
+
+    void applyAdd(int ni, int x) {
+        auto &t = seg[ni];
+        if (!t.len || !x)return;
+
+        t.sum += x * t.len;
+
+        t.mn += x;
+        t.mx += x;
+
+        if (t.mn2 != INF)t.mn2 += x;
+        if (t.mx2 != -INF)t.mx2 += x;
+
+        if (t.hasSet)t.lazySet += x;
+        else t.lazyAdd += x;
+    }
+
+    void applyChmin(int ni, int x) {
+        auto &t = seg[ni];
+        if (!t.len || t.mx <= x)return;
+
+        if (x <= t.mn) {
+            applySet(ni, x);
             return;
         }
 
-        int mid = lx + (rx - lx) / 2;
-        init(nums, 2 * ni + 1, lx, mid);
-        init(nums, 2 * ni + 2, mid, rx);
+        assert(t.mx2 < x);
 
-        seg_data[ni] = merge(seg_data[2 * ni + 1], seg_data[2 * ni + 2]);
+        int old = t.mx;
+        t.sum -= (old - x) * t.mxCnt;
+
+        if (t.mn2 == old)t.mn2 = x;
+
+        t.mx = x;
     }
 
-    void init(vector<int> & nums) {
-        init(nums, 0, 0, tree_size);
-    }
+    void applyChmax(int ni, int x) {
+        auto &t = seg[ni];
+        if (!t.len || t.mn >= x)return;
 
-    void doPushEq(int ni, int lx, int rx, int x) {
-        seg_data[ni].mn = seg_data[ni].mx = seg_data[ni].lazyEqual = x;
-        seg_data[ni].isLazyEqual = 1;
-        seg_data[ni].mnCnt = seg_data[ni].mxCnt = rx - lx;
-        seg_data[ni].secondMx = -oo;
-        seg_data[ni].secondMn = oo;
-
-        seg_data[ni].sum = x * (rx - lx);
-        seg_data[ni].diffGcd = 0;
-        seg_data[ni].lazyAdd = 0;
-    }
-
-    void doPushMinEq(int ni, int lx, int rx, int x) {
-        if (seg_data[ni].mn >= x) doPushEq(ni, lx, rx, x);
-        else if (seg_data[ni].mx > x) {
-            if (seg_data[ni].secondMn == seg_data[ni].mx)
-                seg_data[ni].secondMn = x;
-            seg_data[ni].sum -= (seg_data[ni].mx - x) * seg_data[ni].mxCnt;
-            seg_data[ni].mx = x;
-        }
-    }
-
-    void doPushMaxEq(int ni, int lx, int rx, int x) {
-        if (seg_data[ni].mx <= x) doPushEq(ni, lx, rx, x);
-        else if (seg_data[ni].mn < x) {
-            if (seg_data[ni].secondMx == seg_data[ni].mn)
-                seg_data[ni].secondMx = x;
-
-            seg_data[ni].sum += (x - seg_data[ni].mn) * seg_data[ni].mnCnt;
-            seg_data[ni].mn = x;
-        }
-    }
-
-    void doPushSum(int ni, int lx, int rx, int x) {
-        if (seg_data[ni].mn == seg_data[ni].mx)
-            doPushEq(ni, lx, rx, seg_data[ni].mn + x);
-        else {
-            seg_data[ni].mx += x;
-            if (seg_data[ni].secondMx != -oo)
-                seg_data[ni].secondMx += x;
-
-            seg_data[ni].mn += x;
-            if (seg_data[ni].secondMn != oo)
-                seg_data[ni].secondMn += x;
-
-            seg_data[ni].sum += (rx - lx) * x;
-            seg_data[ni].lazyAdd += x;
-        }
-    }
-
-    void propagete(int ni, int lx, int rx) {
-        if (rx - lx == 1) return;
-
-        int mid = lx + (rx - lx) / 2;
-        if (seg_data[ni].isLazyEqual) {
-            doPushEq(2 * ni + 1, lx, mid, seg_data[ni].lazyEqual);
-            doPushEq(2 * ni + 2, mid, rx, seg_data[ni].lazyEqual);
-            seg_data[ni].lazyEqual = seg_data[ni].isLazyEqual = 0;
-        } else {
-            doPushSum(2 * ni + 1, lx, mid, seg_data[ni].lazyAdd);
-            doPushSum(2 * ni + 2, mid, rx, seg_data[ni].lazyAdd);
-            seg_data[ni].lazyAdd = 0;
-
-            doPushMinEq(2 * ni + 1, lx, mid, seg_data[ni].mx);
-            doPushMinEq(2 * ni + 2, mid, rx, seg_data[ni].mx);
-
-            doPushMaxEq(2 * ni + 1, lx, mid, seg_data[ni].mn);
-            doPushMaxEq(2 * ni + 2, mid, rx, seg_data[ni].mn);
-        }
-    }
-
-    void minimize(int l, int r, int x, int ni, int lx, int rx) {
-        if(rx <= l || lx >= r || seg_data[ni].mx <= x)
-            return;
-        if(lx >= l && rx <= r && seg_data[ni].secondMx < x) {
-            doPushMinEq(ni, lx, rx, x);
+        if (x >= t.mx) {
+            applySet(ni, x);
             return;
         }
 
-        propagete(ni, lx, rx);
+        assert(t.mn2 > x);
 
-        int mid = lx + (rx - lx) / 2;
-        minimize(l, r, x, 2 * ni + 1, lx, mid);
-        minimize(l, r, x, 2 * ni + 2, mid, rx);
+        int old = t.mn;
+        t.sum += (x - old) * t.mnCnt;
 
-        seg_data[ni] = merge(seg_data[2 * ni + 1], seg_data[2 * ni + 2]);
-    }
-    void minimize(int l, int r, int x) {
-        minimize(l, r, x, 0, 0, tree_size);
+        if (t.mx2 == old)t.mx2 = x;
+
+        t.mn = x;
     }
 
-    void maximize(int l, int r, int x, int ni, int lx, int rx) {
-        if(rx <= l || lx >= r || seg_data[ni].mn >= x)
-            return;
-        if(lx >= l && rx <= r && seg_data[ni].secondMn > x) {
-            doPushMaxEq(ni, lx, rx, x);
+    void push(int ni) {
+        int l = 2 * ni + 1, r = l + 1;
+        if (l >= (int) seg.size())return;
+
+        if (seg[ni].hasSet) {
+            applySet(l, seg[ni].lazySet);
+            applySet(r, seg[ni].lazySet);
+            seg[ni].hasSet = false;
+        }
+
+        if (seg[ni].lazyAdd) {
+            int x = seg[ni].lazyAdd;
+            applyAdd(l, x);
+            applyAdd(r, x);
+            seg[ni].lazyAdd = 0;
+        }
+
+        if (seg[l].mx > seg[ni].mx)applyChmin(l, seg[ni].mx);
+        if (seg[r].mx > seg[ni].mx)applyChmin(r, seg[ni].mx);
+
+        if (seg[l].mn < seg[ni].mn)applyChmax(l, seg[ni].mn);
+        if (seg[r].mn < seg[ni].mn)applyChmax(r, seg[ni].mn);
+    }
+
+    void rangeChmin(int l, int r, int x, int ni, int lx, int rx) {
+        if (rx <= l || r <= lx || seg[ni].mx <= x)return;
+
+        if (l <= lx && rx <= r && seg[ni].mx2 < x) {
+            applyChmin(ni, x);
             return;
         }
 
-        propagete(ni, lx, rx);
+        push(ni);
 
-        int mid = lx + (rx - lx) / 2;
-        maximize(l, r, x, 2 * ni + 1, lx, mid);
-        maximize(l, r, x, 2 * ni + 2, mid, rx);
+        int mid = (lx + rx) / 2;
 
-        seg_data[ni] = merge(seg_data[2 * ni + 1], seg_data[2 * ni + 2]);
-    }
-    void maximize(int l, int r, int x) {
-        maximize(l, r, x, 0, 0, tree_size);
+        rangeChmin(l, r, x, 2 * ni + 1, lx, mid);
+        rangeChmin(l, r, x, 2 * ni + 2, mid, rx);
+
+        pull(ni);
     }
 
-    void add(int l, int r, int x, int ni, int lx, int rx) {
-        if(rx <= l || lx >= r)
-            return;
-        if(lx >= l && rx <= r) {
-            doPushSum(ni, lx, rx, x);
+    void rangeChmax(int l, int r, int x, int ni, int lx, int rx) {
+        if (rx <= l || r <= lx || seg[ni].mn >= x)return;
+
+        if (l <= lx && rx <= r && seg[ni].mn2 > x) {
+            applyChmax(ni, x);
             return;
         }
 
-        propagete(ni, lx, rx);
+        push(ni);
 
-        int mid = lx + (rx - lx) / 2;
-        add(l, r, x, 2 * ni + 1, lx, mid);
-        add(l, r, x, 2 * ni + 2, mid, rx);
+        int mid = (lx + rx) / 2;
 
-        seg_data[ni] = merge(seg_data[2 * ni + 1], seg_data[2 * ni + 2]);
-    }
-    void add(int l, int r, int x) {
-        add(l, r, x, 0, 0, tree_size);
+        rangeChmax(l, r, x, 2 * ni + 1, lx, mid);
+        rangeChmax(l, r, x, 2 * ni + 2, mid, rx);
+
+        pull(ni);
     }
 
-    void set(int l, int r, int x, int ni, int lx, int rx) {
-        if(rx <= l || lx >= r)
-            return;
-        if(lx >= l && rx <= r) {
-            doPushEq(ni, lx, rx, x);
+    void rangeAdd(int l, int r, int x, int ni, int lx, int rx) {
+        if (rx <= l || r <= lx)return;
+
+        if (l <= lx && rx <= r) {
+            applyAdd(ni, x);
             return;
         }
 
-        propagete(ni, lx, rx);
+        push(ni);
 
-        int mid = lx + (rx - lx) / 2;
-        set(l, r, x, 2 * ni + 1, lx, mid);
-        set(l, r, x, 2 * ni + 2, mid, rx);
+        int mid = (lx + rx) / 2;
 
-        seg_data[ni] = merge(seg_data[2 * ni + 1], seg_data[2 * ni + 2]);
-    }
-    void set(int l, int r, int x) {
-        set(l, r, x, 0, 0, tree_size);
+        rangeAdd(l, r, x, 2 * ni + 1, lx, mid);
+        rangeAdd(l, r, x, 2 * ni + 2, mid, rx);
+
+        pull(ni);
     }
 
-    Node get_range(int l, int r, int ni, int lx, int rx) {
-        if(lx >= l && rx <= r)
-            return seg_data[ni];
-        if(rx <= l || lx >= r)
-            return Node();
+    void rangeAssign(int l, int r, int x, int ni, int lx, int rx) {
+        if (rx <= l || r <= lx)return;
 
-        propagete(ni, lx, rx);
-
-        int mid = lx + (rx - lx) / 2;
-
-        Node lf = get_range(l, r, 2 * ni + 1, lx, mid);
-        Node ri = get_range(l, r, 2 * ni + 2, mid, rx);
-        return merge(lf, ri);
-    }
-
-    int get_sum(int l, int r) {
-        return get_range(l, r, 0, 0, tree_size).sum;
-    }
-    int get_mx(int l, int r) {
-        return get_range(l, r, 0, 0, tree_size).mx;
-    }
-    int get_mn(int l, int r) {
-        return get_range(l, r, 0, 0, tree_size).mn;
-    }
-
-    int get_gcd(int l, int r, int ni, int lx, int rx) {
-        if(lx >= l && rx <= r) {
-            int ans = seg_data[ni].diffGcd;
-            if (seg_data[ni].secondMx != -oo)
-                ans = gcd(ans, seg_data[ni].secondMx - seg_data[ni].mx);
-            if (seg_data[ni].secondMn != oo)
-                ans = gcd(ans, seg_data[ni].secondMn - seg_data[ni].mn);
-            ans = gcd(ans, seg_data[ni].mx);
-            return ans;
+        if (l <= lx && rx <= r) {
+            applySet(ni, x);
+            return;
         }
-        if(rx <= l || lx >= r)
-            return 0;
 
-        propagete(ni, lx, rx);
+        push(ni);
 
-        int mid = lx + (rx - lx) / 2;
+        int mid = (lx + rx) / 2;
 
-        int lf = get_gcd(l, r, 2 * ni + 1, lx, mid);
-        int ri = get_gcd(l, r, 2 * ni + 2, mid, rx);
-        return gcd(lf, ri);
+        rangeAssign(l, r, x, 2 * ni + 1, lx, mid);
+        rangeAssign(l, r, x, 2 * ni + 2, mid, rx);
+
+        pull(ni);
     }
 
-    int get_gcd(int l, int r) {
-        return get_gcd(l, r, 0, 0, tree_size);
+    Node query(int l, int r, int ni, int lx, int rx) {
+        if (rx <= l || r <= lx)return Node();
+
+        if (l <= lx && rx <= r)
+            return seg[ni];
+
+        push(ni);
+
+        int mid = (lx + rx) / 2;
+
+        return merge(
+                query(l, r, 2 * ni + 1, lx, mid),
+                query(l, r, 2 * ni + 2, mid, rx)
+        );
     }
+
+    int firstGE(int l, int r, int x, int ni, int lx, int rx) {
+        if (rx <= l || r <= lx || seg[ni].mx < x)return -1;
+        if (rx - lx == 1)return lx < n ? lx : -1;
+
+        push(ni);
+
+        int mid = (lx + rx) / 2;
+
+        int ans = firstGE(l, r, x, 2 * ni + 1, lx, mid);
+
+        if (ans != -1)return ans;
+
+        return firstGE(l, r, x, 2 * ni + 2, mid, rx);
+    }
+
+    int firstLE(int l, int r, int x, int ni, int lx, int rx) {
+        if (rx <= l || r <= lx || seg[ni].mn > x)return -1;
+        if (rx - lx == 1)return lx < n ? lx : -1;
+
+        push(ni);
+
+        int mid = (lx + rx) / 2;
+
+        int ans = firstLE(l, r, x, 2 * ni + 1, lx, mid);
+
+        if (ans != -1)return ans;
+
+        return firstLE(l, r, x, 2 * ni + 2, mid, rx);
+    }
+
+    int lastGE(int l, int r, int x, int ni, int lx, int rx) {
+        if (rx <= l || r <= lx || seg[ni].mx < x)return -1;
+        if (rx - lx == 1)return lx < n ? lx : -1;
+
+        push(ni);
+
+        int mid = (lx + rx) / 2;
+
+        int ans = lastGE(l, r, x, 2 * ni + 2, mid, rx);
+
+        if (ans != -1)return ans;
+
+        return lastGE(l, r, x, 2 * ni + 1, lx, mid);
+    }
+
+    int lastLE(int l, int r, int x, int ni, int lx, int rx) {
+        if (rx <= l || r <= lx || seg[ni].mn > x)return -1;
+        if (rx - lx == 1)return lx < n ? lx : -1;
+
+        push(ni);
+
+        int mid = (lx + rx) / 2;
+
+        int ans = lastLE(l, r, x, 2 * ni + 2, mid, rx);
+
+        if (ans != -1)return ans;
+
+        return lastLE(l, r, x, 2 * ni + 1, lx, mid);
+    }
+
+    int nodeGcd(const Node &t) {
+        if (!t.len)return 0;
+
+        int g = G(t.mn, t.mx);
+
+        if (t.mn2 < t.mx) {
+            g = G(g, t.mn2);
+            g = G(g, t.midGcd);
+        }
+
+        return g;
+    }
+
+    // Returns the number of elements in O(1).
+    int size() { return n; }
+
+    // Checks whether the tree is empty in O(1).
+    bool empty() { return !n; }
+
+    // Applies a[i] = min(a[i],x) on [l,r) in O(log^2 n) amortized.
+    void rangeChmin(int l, int r, int x) {
+        rangeChmin(l, r, x, 0, 0, tree_size);
+    }
+
+    // Applies a[i] = max(a[i],x) on [l,r) in O(log^2 n) amortized.
+    void rangeChmax(int l, int r, int x) {
+        rangeChmax(l, r, x, 0, 0, tree_size);
+    }
+
+    // Adds x to every element in [l,r) in O(log n).
+    void rangeAdd(int l, int r, int x) {
+        rangeAdd(l, r, x, 0, 0, tree_size);
+    }
+
+    // Assigns x to every element in [l,r) in O(log n).
+    void rangeAssign(int l, int r, int x) {
+        rangeAssign(l, r, x, 0, 0, tree_size);
+    }
+
+    // Clamps every element in [l,r) to [lo,hi] in O(log^2 n) amortized.
+    void rangeClamp(int l, int r, int lo, int hi) {
+        assert(lo <= hi);
+        rangeChmax(l, r, lo);
+        rangeChmin(l, r, hi);
+    }
+
+    // Returns all maintained information on [l,r) in O(log n).
+    Node query(int l, int r) {
+        return query(l, r, 0, 0, tree_size);
+    }
+
+    // Returns the sum on [l,r) in O(log n).
+    int rangeSum(int l, int r) {
+        return query(l, r).sum;
+    }
+
+    // Returns the minimum on [l,r) in O(log n).
+    int rangeMin(int l, int r) {
+        return query(l, r).mn;
+    }
+
+    // Returns the maximum on [l,r) in O(log n).
+    int rangeMax(int l, int r) {
+        return query(l, r).mx;
+    }
+
+    // Returns the gcd of all values on [l,r) in O(log n).
+    int rangeGcd(int l, int r) {
+        return nodeGcd(query(l, r));
+    }
+
+    // Returns how many times the minimum appears on [l,r) in O(log n).
+    int rangeCountMin(int l, int r) {
+        return query(l, r).mnCnt;
+    }
+
+    // Returns how many times the maximum appears on [l,r) in O(log n).
+    int rangeCountMax(int l, int r) {
+        return query(l, r).mxCnt;
+    }
+
+    // Returns the first index in [l,r) with a[i]>=x, or -1, in O(log n).
+    int firstAtLeast(int l, int r, int x) {
+        return firstGE(l, r, x, 0, 0, tree_size);
+    }
+
+    // Returns the first index in [l,r) with a[i]<=x, or -1, in O(log n).
+    int firstAtMost(int l, int r, int x) {
+        return firstLE(l, r, x, 0, 0, tree_size);
+    }
+
+    // Returns the last index in [l,r) with a[i]>=x, or -1, in O(log n).
+    int lastAtLeast(int l, int r, int x) {
+        return lastGE(l, r, x, 0, 0, tree_size);
+    }
+
+    // Returns the last index in [l,r) with a[i]<=x, or -1, in O(log n).
+    int lastAtMost(int l, int r, int x) {
+        return lastLE(l, r, x, 0, 0, tree_size);
+    }
+
+    // Returns a[i] in O(log n).
+    int get(int i) {
+        return rangeSum(i, i + 1);
+    }
+
+    // Changes a[i] to x in O(log n).
+    void setPoint(int i, int x) {
+        rangeAssign(i, i + 1, x);
+    }
+
+    // Returns the total sum in O(1).
+    int totalSum() {
+        return seg[0].sum;
+    }
+
+    // Returns the global minimum in O(1).
+    int totalMin() {
+        return seg[0].mn;
+    }
+
+    // Returns the global maximum in O(1).
+    int totalMax() {
+        return seg[0].mx;
+    }
+
+    // Returns the global gcd in O(1).
+    int totalGcd() {
+        return nodeGcd(seg[0]);
+    }
+
+    void minimize(int l, int r, int x) { rangeChmin(l, r, x); }
+
+    void maximize(int l, int r, int x) { rangeChmax(l, r, x); }
+
+    void add(int l, int r, int x) { rangeAdd(l, r, x); }
+
+    void set(int l, int r, int x) { rangeAssign(l, r, x); }
+
+    int get_sum(int l, int r) { return rangeSum(l, r); }
+
+    int get_mn(int l, int r) { return rangeMin(l, r); }
+
+    int get_mx(int l, int r) { return rangeMax(l, r); }
+
+    int get_gcd(int l, int r) { return rangeGcd(l, r); }
 };
